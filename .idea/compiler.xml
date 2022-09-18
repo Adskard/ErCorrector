@@ -10,5 +10,8 @@
         <module name="ErCorrector" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ErCorrector" target="15" />
+    </bytecodeTargetLevel>
   </component>
 </project>
