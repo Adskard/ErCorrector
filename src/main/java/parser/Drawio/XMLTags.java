@@ -1,7 +1,7 @@
 package parser.Drawio;
 
 public enum XMLTags {
-    XML_TAG("mxCell"),
+    CELL("mxCell"),
     PARENT_ATTRIBUTE("parent"),
     EDGE_ATTRIBUTE("edge"),
     NAME_ATTRIBUTE("value"),
@@ -12,8 +12,8 @@ public enum XMLTags {
     VERTEX_ATTRIBUTE("vertex");
 
     private final String value;
-    private XMLTags(String XMLatribute){
-        this.value = XMLatribute;
+    XMLTags(String value){
+        this.value = value;
     }
 
     public String getValue() {

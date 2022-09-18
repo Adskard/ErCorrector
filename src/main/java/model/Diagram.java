@@ -17,7 +17,7 @@ public class Diagram {
         vertices.add(vert);
     }
 
-    public void addEdges(Connection edge){
+    public void addEdge(Connection edge){
         edges.add(edge);
     }
 
@@ -33,11 +33,19 @@ public class Diagram {
         return vertices.stream().filter((vert) -> vert.getId().equals(id)).findAny();
     }
 
+    public Optional<Connection> findEdgeById(String id){
+        return edges.stream().filter((edge) -> edge.getId().equals(id)).findAny();
+    }
+
     @Override
     public String toString() {
-        return "Diagram{" +
-                "vertices=" + Arrays.toString(vertices.toArray()) +
-                ", edges=" + Arrays.toString(edges.toArray()) +
+        return "Diagram{\n=======================\n"+
+                "VERTICES\n"+
+                "========================\n"+ Arrays.toString(vertices.toArray()) +
+                "\n=======================\n"+
+                "EDGES\n"+
+                "========================\n"+
+                Arrays.toString(edges.toArray()) +
                 '}';
     }
 }

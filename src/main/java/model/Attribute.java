@@ -5,30 +5,30 @@
  */
 package model;
 
+
+import lombok.*;
+
+@Getter
+@Setter
 public class Attribute extends DataClass{
     private final Boolean isKey;
     private final Boolean isMultivalued;
+    private final Boolean isCompositeKey;
 
-    public Attribute(String name, String id, Boolean isWeak, Boolean isKey, Boolean isMultivalued) {
-
+    @Builder
+    public Attribute(String name, String id, Boolean isWeak, Boolean isKey, Boolean isCompositeKey, Boolean isMultivalued) {
         super(name, id, isWeak);
         this.isKey = isKey;
         this.isMultivalued = isMultivalued;
+        this.isCompositeKey = isCompositeKey;
     }
-
-    public Boolean getKey() {
-        return isKey;
-    }
-
-    public Boolean getMultivalued() {
-        return isMultivalued;
-    }
-
     @Override
     public String toString() {
-        return "Attribute{" +
-                "isKey=" + isKey +
-                ", isMultivalued=" + isMultivalued +
-                " " + super.toString().substring(1);
+        return "Attribute{ " +
+                super.toString().substring(1,super.toString().length()-2) +
+                ", isKey=" + isKey +
+                ", isCompositeKey" + isCompositeKey +
+                ", isMultivalued=" + isMultivalued
+                + "}\n";
     }
 }

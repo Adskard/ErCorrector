@@ -5,28 +5,19 @@
  */
 package model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@RequiredArgsConstructor
+@AllArgsConstructor
 public abstract class DataClass {
     private final String name;
     private final String id;
-    private final Boolean isWeak;
-
-    protected DataClass(String name, String id, Boolean isWeak) {
-        this.name = name;
-        this.isWeak = isWeak;
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Boolean getWeak() {
-        return isWeak;
-    }
+    private Boolean isWeak;
 
     @Override
     public String toString() {

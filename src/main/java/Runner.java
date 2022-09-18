@@ -1,34 +1,35 @@
 
+import lombok.extern.java.Log;
 import org.xml.sax.SAXException;
 import parser.XMLValidator;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
  
 
+@Log
 public class Runner {
-    private static final Logger logger = Logger.getLogger(Runner.class.getName());
     public static void main(String[] args) {
         
-        String diagramsPath = "D:\\CVUT\\bakalarka\\diagrams";
-        String fileName = "\\allEntities.xml";
+        String diagramsPath = "test_data_ER/erdia/";
+        String fileName = "allErParts_erdia.xml";
         try{
-            File f = new File(diagramsPath + fileName);
-            logger.log(Level.FINE, f.getName() + " can read: " + f.canRead());
-
-            XMLValidator xml = new XMLValidator(f);
+            File xmlFile = new File(Runner.class.getClassLoader().getResource(diagramsPath+fileName).toURI());
+            log.log(Level.FINE, xmlFile.getName() + (xmlFile.canRead() ? " is readable" : " is unreadable" ));
+            XMLValidator xml = new XMLValidator(xmlFile);
             xml.extractDiagram();
         }
-        catch(IOException e){
-            logger.log(Level.SEVERE, "Input file exception");
+        catch(IOException | URISyntaxException | NullPointerException e){
+            log.log(Level.SEVERE, "Input file exception");
             e.printStackTrace();
             System.exit(1);
         }
         catch(SAXException | ParserConfigurationException e){
-            logger.log(Level.SEVERE, "Parser exception");
+            log.log(Level.SEVERE, "Parser exception");
             e.printStackTrace();
             System.exit(1);
         }

@@ -1,22 +1,41 @@
 package parser.Erdia;
 
 public enum XMLTags {
-    XML_TAG("mxCell"),
-    PARENT_ATTRIBUTE("parent"),
-    EDGE_ATTRIBUTE("edge"),
-    NAME_ATTRIBUTE("value"),
+    CELL("mxCell"),
+    ENTITY("ErEntity"),
+    ATTRIBUTE("ErAttribute"),
+    RELATIONSHIP("ErRelationship"),
+    ATTRIBUTE_CONNECTOR("ErAttributeConnector"),
+    RELATIONSHIP_CONNECTOR("ErRelationshipConnector"),
+    HIERARCHY("ErHierarchy"),
+    GENERALIZATION_CONNECTOR("ErGeneralizationConnector"),
+    SPECIALIZATION_CONNECTOR("ErSpecializationConnector"),
+    COMPOSITE_ID("ErCompositeIdentifier"),
+    KEY_ATTRIBUTE("simpleIdentifier"),
+    COMPOSITE_MEMBER("ErCompositeIdentifierMember"),
+    NAME_ATTRIBUTE("name"),
     STYLE_ATTRIBUTE("style"),
     ID_ATTRIBUTE("id"),
+    CARDINALITY_MIN_ATTRIBUTE("cardinalityMin"),
+    CARDINALITY_MAX_ATTRIBUTE("cardinalityMax"),
+    COVERAGE_ATTRIBUTE("coverage"),
+    DISJOINTNESS_ATTRIBUTE("disjointness"),
     SOURCE_ATTRIBUTE("source"),
     TARGET_ATTRIBUTE("target"),
+    EDGE_ATTRIBUTE("edge"),
     VERTEX_ATTRIBUTE("vertex");
 
     private final String value;
-    private XMLTags(String XMLatribute){
-        this.value = XMLatribute;
+    XMLTags(String value){
+        this.value = value;
     }
 
     public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
         return value;
     }
 }

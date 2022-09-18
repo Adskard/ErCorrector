@@ -2,7 +2,6 @@ package parser;
 
 import model.Diagram;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -25,9 +24,9 @@ public class XMLValidator {
         }
     }
 
+
     public Diagram extractDiagram() throws SAXException, IOException, ParserConfigurationException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        //dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(file);
         doc.getDocumentElement().normalize();
@@ -37,7 +36,8 @@ public class XMLValidator {
         Parser parser;
 
         //select parser
-        if(doc.getDocumentElement().hasAttribute("host") && doc.getDocumentElement().getAttribute("host").equals("app.diagrams.net")){
+        if(doc.getDocumentElement().hasAttribute("host") &&
+                doc.getDocumentElement().getAttribute("host").equals("app.diagrams.net")){
             parser = new DrawioParser();
         }
         else if(doc.getDocumentElement().getTagName().equals("mxGraphModel")){

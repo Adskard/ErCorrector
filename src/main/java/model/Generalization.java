@@ -5,41 +5,45 @@
  */
 package model;
 
-import enums.Covering;
+import enums.Cardinality;
+import enums.Coverage;
 import enums.Disjointness;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.Singular;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
+@Setter
 public class Generalization extends Connection{
 
-    private  Covering covering;
+    private Coverage coverage;
     private  Disjointness disjointness;
-    private final List<String> description = new LinkedList<>();
-    public List<String> getDescription() {
-        return description;
-    }
 
-    public Generalization(String id, DataClass source, DataClass target,List<String> description) {
+    @Builder(builderMethodName = "GeneralizationBuilder")
+    public Generalization(String id, DataClass source, DataClass target,
+                          Coverage covering, Disjointness disjointness) {
         super(id, source, target);
-        this.description.addAll(description);
+        this.coverage = covering;
+        this.disjointness = disjointness;
     }
 
-    public Covering getCovering() {
-        return covering;
+    public Generalization(String id, DataClass source, DataClass target, List<String> description) {
+        super(id, source, target, description);
     }
 
-    public Disjointness getDisjointness() {
-        return disjointness;
-    }
 
     @Override
     public String toString() {
-        return "Generalization{" +
-                "covering=" + covering +
-                ", disjointness=" + disjointness +
-                ",\nsource=" + super.getSource() +
-                ",target=" + super.getTarget() +
+
+        return "Generalization" +
+                super.toString().substring(0, super.toString().length()-2) +
+                "   Coverage = " + coverage +
+                "   Disjointness = " + disjointness +
                 "}\n";
     }
 }
