@@ -1,8 +1,14 @@
 package enums;
 
-import java.util.regex.Pattern;
+import lombok.Getter;
 
+/**
+ * Diagram hierarchy coverage information
+ * @author Adam Skarda
+ */
+@Getter
 public enum Coverage {
+    NOT_RECOGNIZED("Not recognized"),
     COMPLETE("complete"),
     PARTIAL("partial");
 
@@ -11,20 +17,20 @@ public enum Coverage {
         this.value = value;
     }
 
-    public static Coverage decideCovering(String covering){
-        Pattern completePattern = Pattern.compile(COMPLETE.getValue(), Pattern.CASE_INSENSITIVE);
-        Pattern partialPattern = Pattern.compile(PARTIAL.getValue(), Pattern.CASE_INSENSITIVE);
-        if(completePattern.matcher(covering).matches()){
+    /**
+     * Decides coverage from a string value
+     * @param covering string containing coverage information
+     * @return Appropriate coverage, or NOT_RECOGNIZED if the coverage
+     * could not be accurately decided
+     */
+    public static Coverage decideCoverage(String covering){
+        if(covering.toLowerCase().contains(COMPLETE.getValue())){
             return COMPLETE;
         }
-        else if(partialPattern.matcher(covering).matches()){
+        else if(covering.toLowerCase().contains(PARTIAL.getValue())){
             return PARTIAL;
         }
-        else return null;
-    }
-
-    public String getValue() {
-        return value;
+        else return NOT_RECOGNIZED;
     }
 
     @Override

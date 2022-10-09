@@ -1,12 +1,15 @@
 package parser.Erdia;
 
+/**
+ * Values of XML attributes used for parsing
+ * @author Adam Skarda
+ */
 public enum Tokens {
     ENTITY("entity"),
     ATTRIBUTE_CONNECTOR("attributeConnector"),
     COMPOSITE_ID("compositeIdentifier"),
     RELATIONSHIP_CONNECTOR("relationshipConnector"),
     RELATIONSHIP("relationship"),
-    HIERARCHY("hierarchy"),
     GENERALIZATION("generalization"),
     SPECIALIZATION("specialization"),
     ATTRIBUTE("attribute");

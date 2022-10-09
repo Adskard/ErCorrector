@@ -5,25 +5,60 @@
  */
 package model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * The DataClass class is a common abstraction of entities, attributes
+ * and relationship in Entity-Relationship diagram. It serves as an aggregation
+ * of their basic properties.
+ * @author Adam Skarda
+ */
 @Getter
 @Setter
 @RequiredArgsConstructor
-@AllArgsConstructor
 public abstract class DataClass {
+    /**
+     * Human readable DataClass name
+     */
     private final String name;
+
+    /**
+     * Unique identifier in diagram
+     */
     private final String id;
-    private Boolean isWeak;
+
+    /**
+     * Connections leading to and from this DataClass
+     */
+    private final List<Connection> connections = new LinkedList<>();
+
+    public void addConnection(Connection connection){
+        connections.add(connection);
+    }
+
+    public List<Connection> getConnections(){
+        return new LinkedList<>(connections);
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof DataClass){
+            DataClass comparedObject = (DataClass) o;
+            if(comparedObject.getId().equals(id)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public String toString() {
         return "{" +
                 "name='" + name + '\'' +
-                ", isWeak=" + isWeak +
+                ", id=" + id +
                 "}\n";
     }
 }

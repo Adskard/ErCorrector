@@ -5,23 +5,31 @@
  */
 package model;
 
-import enums.Cardinality;
 import enums.Coverage;
 import enums.Disjointness;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Singular;
 
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Connection denoting a generalization. Where target is the ancestor
+ * and source is the child.
+ * @author Adam Skarda
+ */
 @Getter
 @Setter
 public class Generalization extends Connection{
 
+    /**
+     * Generalization Coverage either complete, partial, or not recognized
+     */
     private Coverage coverage;
+
+    /**
+     * Generalization Disjointness either exclusive, overlapping, or not recognized
+     */
     private  Disjointness disjointness;
 
     @Builder(builderMethodName = "GeneralizationBuilder")
@@ -36,6 +44,13 @@ public class Generalization extends Connection{
         super(id, source, target, description);
     }
 
+    /**
+     * Do not change generalization source and target
+     */
+    @Override
+    public void organize(){
+        return;
+    }
 
     @Override
     public String toString() {
@@ -44,6 +59,6 @@ public class Generalization extends Connection{
                 super.toString().substring(0, super.toString().length()-2) +
                 "   Coverage = " + coverage +
                 "   Disjointness = " + disjointness +
-                "}\n";
+                "\n}\n";
     }
 }

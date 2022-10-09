@@ -1,5 +1,10 @@
 package parser.Erdia;
 
+
+/**
+ * XML tags and attribute names used for parsing
+ * @author Adam Skarda
+ */
 public enum XMLTags {
     CELL("mxCell"),
     ENTITY("ErEntity"),
@@ -10,7 +15,7 @@ public enum XMLTags {
     HIERARCHY("ErHierarchy"),
     GENERALIZATION_CONNECTOR("ErGeneralizationConnector"),
     SPECIALIZATION_CONNECTOR("ErSpecializationConnector"),
-    COMPOSITE_ID("ErCompositeIdentifier"),
+    COMPOSITE_ID("compositeIdentifier"),
     KEY_ATTRIBUTE("simpleIdentifier"),
     COMPOSITE_MEMBER("ErCompositeIdentifierMember"),
     NAME_ATTRIBUTE("name"),

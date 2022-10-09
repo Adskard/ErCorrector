@@ -5,10 +5,15 @@
  */
 package model;
 
+/**
+ * The class Relationship is a direct mapping of attributes from
+ * Entity-Relationship diagram.
+ * @author Adam Skarda
+ */
 public class Relationship extends DataClass{
 
     public Relationship(String name, String id, Boolean isWeak) {
-        super(name, id, isWeak);
+        super(name, id);
     }
 
     @Override

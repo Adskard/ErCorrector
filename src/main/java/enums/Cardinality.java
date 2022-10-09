@@ -1,12 +1,18 @@
 package enums;
 
-import exception.CardinalityNotRecognizedException;
-
+import lombok.Getter;
+/**
+ * @author Adam Skarda
+ * Connection cardinality
+ */
+@Getter
 public enum Cardinality {
-    ONE("\\s1\\.+1\\s","1..1"),
-    ZERO_TO_ONE("\\s0\\.+1\\s", "0..1"),
-    ZERO_TO_MANY("\\s0\\.+[M,N,m,n]\\s", "0..N"),
-    ONE_TO_MANY("\\s1\\.+[M,N,m,n]\\s", "1..N");
+    NOT_RECOGNIZED("", "Not recognized"),
+    NO_CARDINALITY("", "No cardinality"),
+    ONE("\\s*1\\.+1\\s*","1..1"),
+    ZERO_TO_ONE("\\s*0\\.+1\\s*", "0..1"),
+    ZERO_TO_MANY("\\s*0\\.+[M,N,m,n]\\s*", "0..N"),
+    ONE_TO_MANY("\\s*1\\.+[M,N,m,n]\\s*", "1..N");
 
     private final String regex;
     private final String value;
@@ -15,11 +21,14 @@ public enum Cardinality {
         this.value = value;
         this.regex = regex;
     }
-
-    public String getValue() {
-        return regex;
-    }
-
+    /**
+     * Parses cardinality based on minimal and maximal number of members.
+     * Uses standard ER notation.
+     *
+     * @param min Minimum number of members
+     * @param max Maximum number of members
+     * @return Suitable cardinality, null if such cardinality does not exist
+     */
     public static Cardinality decideCardinality(String min, String max){
         if(min.strip().equals("0") && max.strip().equals("1")){
             return ZERO_TO_ONE;
@@ -33,25 +42,38 @@ public enum Cardinality {
         if(min.strip().equals("1") && max.strip().equals("N")){
             return ONE_TO_MANY;
         }
+        if(min.strip().equals("") && max.strip().equals("")){
+            return NO_CARDINALITY;
+        }
         else{
-            return null;
+            return NOT_RECOGNIZED;
         }
     }
 
-    public static Cardinality decideCardinality(String description) throws CardinalityNotRecognizedException{
-        if(description.matches(ZERO_TO_ONE.getValue())){
+    /**
+     * Parses cardinality based on regular expression matching
+     *
+     * @param description cardinality string in proper form (0..N, 1..N, 0..1, 1..1)
+     * @return Suitable cardinality, null if such cardinality does not exist
+     */
+
+    public static Cardinality decideCardinality(String description){
+        if(description.matches(ZERO_TO_ONE.getRegex())){
             return ZERO_TO_ONE;
         }
-        if(description.matches(ZERO_TO_MANY.getValue())){
+        if(description.matches(ZERO_TO_MANY.getRegex())){
             return ZERO_TO_MANY;
         }
-        if(description.matches(ONE.getValue())){
+        if(description.matches(ONE.getRegex())){
             return ONE;
         }
-        if(description.matches(ONE_TO_MANY.getValue())){
+        if(description.matches(ONE_TO_MANY.getRegex())){
             return ONE_TO_MANY;
         }
-        throw new CardinalityNotRecognizedException(description + " does not match a recognized cardinality!");
+        if(description.strip().equals("")){
+            return NO_CARDINALITY;
+        }
+        return NOT_RECOGNIZED;
     }
 
     @Override

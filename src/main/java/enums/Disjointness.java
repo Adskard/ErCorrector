@@ -1,8 +1,14 @@
 package enums;
 
-import java.util.regex.Pattern;
+import lombok.Getter;
 
+/**
+ * Diagram hierarchy disjointness information
+ * @author Adam Skarda
+ */
+@Getter
 public enum Disjointness {
+        NOT_RECOGNIZED("Not recognized"),
         EXCLUSIVE("exclusive"),
         OVERLAPPING("overlapping");
 
@@ -11,22 +17,21 @@ public enum Disjointness {
         this.value = value;
     }
 
+    /**
+     * Decides disjointness from a string value
+     * @param disjointness string disjointness information
+     * @return Appropriate disjointness, or NOT_RECOGNIZED if the disjointness
+     * could not be accurately decided
+     */
     public static Disjointness decideDisjointness(String disjointness){
-        Pattern exclusivePattern = Pattern.compile(EXCLUSIVE.getValue(), Pattern.CASE_INSENSITIVE);
-        Pattern overlappingPattern = Pattern.compile(OVERLAPPING.getValue(), Pattern.CASE_INSENSITIVE);
-        if(exclusivePattern.matcher(disjointness).matches()){
+        if(disjointness.toLowerCase().contains(EXCLUSIVE.getValue())){
             return EXCLUSIVE;
         }
-        else if(overlappingPattern.matcher(disjointness).matches()){
+        else if(disjointness.toLowerCase().contains(OVERLAPPING.getValue())){
             return OVERLAPPING;
         }
-        else return null;
+        else return NOT_RECOGNIZED;
     }
-
-    public String getValue() {
-        return value;
-    }
-
 
     @Override
     public String toString() {
