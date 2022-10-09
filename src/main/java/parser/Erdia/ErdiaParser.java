@@ -17,19 +17,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-
-//TODO logging
-//TODO javadoc
-//TODO exceptions
-//TODO connection description
-//TODO
 /**
+ * The ErdiaParser class is a parser for XML files of Entity-Relationship diagram
+ * exported from online modeling tool erdia.stejspet.cz. Its output is populated
+ * and connected Diagram.
  * @author Adam Skarda
  */
 @Log
 public class ErdiaParser implements Parser {
+    /**
+     * Resulting diagram to be populated, connected and transformed
+     */
     private final Diagram diagram = new Diagram();
+
+    /**
+     * XML elements identified by xml attribute "edge"
+     */
     private final List<Element> edges = new LinkedList<>();
+
+    /**
+     * XML elements identified by xml attribute "vertex"
+     */
     private final List<Element> vertices = new LinkedList<>();
 
     /**
@@ -61,7 +69,7 @@ public class ErdiaParser implements Parser {
 
 
     /**
-     *
+     * Sorts XML nodes into corresponding vertex and edge categories
      * @param cells NodeList with Element nodes
      * @see Element
      */
@@ -118,10 +126,10 @@ public class ErdiaParser implements Parser {
     }
 
     /**
-     *
-     * @param edge
-     * @param sourceId
-     * @param target
+     * Adds a hierarchical generalization connection to the diagram
+     * @param edge Edge element connecting source XML hierarchy tag and target child entity
+     * @param sourceId XML tag id of connecting hierarchy
+     * @param target Child Entity from diagram to be connected to its parent through hierarchy
      */
     private void addGeneralization(Element edge, String sourceId, DataClass target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
@@ -165,18 +173,18 @@ public class ErdiaParser implements Parser {
         diagram.addEdge(generalization);
         target.addConnection(generalization);
         generalizationTarget.addConnection(generalization);
+        log.log(Level.FINER, String.format("Added connection: %s", generalization));
     }
 
     /**
-     *
-     * @param edge
-     * @param source
-     * @param target
+     * Adds Connection joining relationship and an Entity to the diagram
+     * @param edge Edge element connecting source and target DataClasses
+     * @param source Diagram vertex either Entity or Relationship
+     * @param target Diagram vertex either Entity or Relationship
      */
     private void addRelationshipConnection(Element edge, DataClass source, DataClass target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
         Element innerElement = (Element) edge.getFirstChild();
-
         Connection relationshipConnection = Connection.builder().id(id)
                 .source(source)
                 .target(target)
@@ -184,18 +192,20 @@ public class ErdiaParser implements Parser {
                         innerElement.getAttribute(XMLTags.CARDINALITY_MIN_ATTRIBUTE.getValue()),
                         innerElement.getAttribute(XMLTags.CARDINALITY_MAX_ATTRIBUTE.getValue())))
                 .build();
+        relationshipConnection.addDescription(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()));
 
         diagram.addEdge(relationshipConnection);
         source.addConnection(relationshipConnection);
         target.addConnection(relationshipConnection);
+
+        log.log(Level.FINER, String.format("Added connection: %s", relationshipConnection));
     }
 
     /**
-     *
-     * @param edge
-     * @param source
-     * @param target
-     * @return
+     * Adds Attribute connection to the diagram
+     * @param edge Edge element connecting source and target
+     * @param source Diagram vertex
+     * @param target Diagram vertex
      */
     private void addAttributeConnection(Element edge, DataClass source, DataClass target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
@@ -219,6 +229,8 @@ public class ErdiaParser implements Parser {
         diagram.addEdge(attributeConnection);
         source.addConnection(attributeConnection);
         target.addConnection(attributeConnection);
+
+        log.log(Level.FINER, String.format("Added connection: %s", attributeConnection));
     }
 
     /**
@@ -234,26 +246,37 @@ public class ErdiaParser implements Parser {
         for(Element vertex : vertices){
             Element innerElement = (Element) vertex.getFirstChild();
             if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.ENTITY.getValue())){
-                diagram.addVertex(new Entity(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
-                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false));
 
+                Entity entity = new Entity(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
+                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false);
+                diagram.addVertex(entity);
+                log.log(Level.FINER, String.format("Added entity: %s", entity));
             }
             else if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.RELATIONSHIP.getValue())){
-                diagram.addVertex(new Relationship(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
-                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false));
+
+                Relationship relationship = new Relationship(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
+                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false);
+                diagram.addVertex(relationship);
+                log.log(Level.FINER, String.format("Added relationship: %s", relationship));
 
             }
             else if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.ATTRIBUTE.getValue())){
-                diagram.addVertex(new Attribute(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
+
+                Attribute attribute = new Attribute(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
                         vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()),
-                        innerElement.getAttribute(XMLTags.KEY_ATTRIBUTE.getValue()).equals("1")));
+                        innerElement.getAttribute(XMLTags.KEY_ATTRIBUTE.getValue()).equals("1"));
+                diagram.addVertex(attribute);
+                log.log(Level.FINER, String.format("Added attribute: %s", attribute));
             }
         }
     }
 
     /**
+     * Adds composite identifiers to the Diagram.
+     * Edges must be first organized before adding Composites.
      *
      * @see Diagram
+     * @see Composite
      */
     private void addCompositeIdentifiersToDiagram(){
         for(Element vertex : vertices){
@@ -273,11 +296,13 @@ public class ErdiaParser implements Parser {
                         continue;
                     }
 
+                    //is always entity in organized diagram
                     Entity associatedEntity = (Entity) compositeMemberEdges.get(0).getTarget();
 
                     Composite composite = new Composite(associatedEntity, vertexId);
                     composite.addAllCompositeMembers(compositeMemberEdges);
                     diagram.addComposite(composite);
+                    log.log(Level.FINER, String.format("Added composite: %s", composite));
                 }
             }
             catch (RuntimeException e){

@@ -38,7 +38,12 @@ public class Diagram {
         edges.forEach((edge) -> edge.organize());
     }
 
+    public void identifyWeakEntities(){
+        vertices.stream().filter((vertex) -> vertex instanceof Entity)
+                .forEach((vertex) ->{
 
+                });
+    }
 
     public boolean isEntityIdentifiedBySimpleKey(Entity entity){
         List<Connection> connections = getDataClassConnections(entity);

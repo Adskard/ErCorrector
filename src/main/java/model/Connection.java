@@ -7,10 +7,8 @@ package model;
 
 import enums.Cardinality;
 import lombok.*;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
 
 /**
  * The Connection class is mapping of an edge from Entity-Relationship
@@ -82,6 +80,18 @@ public class Connection {
         this.id = id;
         this.source = source;
         this.target = target;
+    }
+
+    public void addDescription(String description){
+        this.description.add(description);
+    }
+
+    public void addAllDescriptions(Collection<String> descriptions){
+        this.description.addAll(descriptions);
+    }
+
+    public List<String> getDescription(){
+        return new LinkedList<>(description);
     }
 
     @Builder
