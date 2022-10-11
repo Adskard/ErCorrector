@@ -2,10 +2,7 @@ package model;
 
 import lombok.Getter;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The class composite is a composition of Connections to members of
@@ -14,10 +11,9 @@ import java.util.List;
 @Getter
 public class Composite implements Key {
     /**
-     * Connections to composite members. Connections are stare instead of
-     * the members to preserve information.
+     * Connections and members of composite key.
      */
-    private final List<Connection> identifierConnections = new LinkedList<>();
+    private final HashMap<Connection, DataClass> compositeMembers = new HashMap<>();
     /**
      * Entity identified by this composite identifier.
      */
@@ -32,12 +28,16 @@ public class Composite implements Key {
         this.entity = entity;
     }
 
-    public void addAllCompositeMembers(Collection<Connection> members){
-        identifierConnections.addAll(members);
+    /**
+     * Adds a Connection as a member of this composite
+     * @param member Connection of composite
+     */
+    public void addCompositeMember(Connection connection, DataClass member){
+        compositeMembers.put(connection, member);
     }
 
-    public void addCompositeMember(Connection member){
-        identifierConnections.add(member);
+    public boolean isRelationshipBased(){
+        return compositeMembers.values().stream().anyMatch((dataClass)-> dataClass instanceof Relationship);
     }
 
     @Override
@@ -53,9 +53,7 @@ public class Composite implements Key {
 
     @Override
     public String toString(){
-        return "Entity: " + this.entity.toString()
-                + " Members: "
-                + Arrays.toString(identifierConnections.toArray()) +
-                "\n";
+        return String.format("Composite Key id=%s ", id)
+                + "\n";
     }
 }

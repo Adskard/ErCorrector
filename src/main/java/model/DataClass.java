@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The DataClass class is a common abstraction of entities, attributes
@@ -34,6 +35,17 @@ public abstract class DataClass {
      * Connections leading to and from this DataClass
      */
     private final List<Connection> connections = new LinkedList<>();
+
+    /**
+     * For quick access to connected DataClasses
+     * @return DataClasses connected to this DataClass
+     */
+    public List<DataClass> getAdjacentDataClasses(){
+        return connections.stream()
+                .map((connection) ->
+                    this.equals(connection.getTarget()) ? connection.getSource() : connection.getTarget())
+                .collect(Collectors.toList());
+    }
 
     public void addConnection(Connection connection){
         connections.add(connection);

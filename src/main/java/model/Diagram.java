@@ -38,26 +38,58 @@ public class Diagram {
         edges.forEach((edge) -> edge.organize());
     }
 
-    public void identifyWeakEntities(){
-        vertices.stream().filter((vertex) -> vertex instanceof Entity)
-                .forEach((vertex) ->{
 
-                });
+    public void identifyWeakEntities(){
+        List<Entity> entities = vertices.stream().filter((vert) -> vert instanceof Entity)
+                .map((vert)->(Entity) vert)
+                .collect(Collectors.toList());
+
+        for(Entity entity : entities){
+            entity.getKeys().forEach((key)->{
+                //simple key
+                if(key instanceof Attribute){
+                    entity.setIsWeak(false);
+                    return;
+                }
+                //composite
+                else if(key instanceof Composite){
+                    Composite composite = (Composite) key;
+                    if(!composite.isRelationshipBased()){
+                        entity.setIsWeak(false);
+                    }
+                }
+            });
+        }
     }
 
-    public boolean isEntityIdentifiedBySimpleKey(Entity entity){
-        List<Connection> connections = getDataClassConnections(entity);
-        return connections.stream().anyMatch((connection)->{
-            if(connection.getSource() instanceof Attribute){
-                return ((Attribute) connection.getSource()).getIsKey();
-            }
-            else if(connection.getTarget() instanceof Attribute){
-                return ((Attribute) connection.getTarget()).getIsKey();
-            }
-            else {
-                return false;
-            }
-        });
+    public void addKeysToEntities(){
+
+        List<Entity> entities = vertices.stream().filter((vert) -> vert instanceof Entity)
+                .map((vert)->(Entity) vert)
+                .collect(Collectors.toList());
+
+
+        for(Entity entity : entities){
+
+            //add simple keys
+            entity.getConnections().forEach((connection)->{
+                if(connection.isAttributeConnection()){
+                    Attribute attribute = (Attribute)  (connection.getTarget().equals(entity) ?
+                            connection.getSource(): connection.getTarget());
+                    if(attribute.getIsKey()){
+                        entity.addKey(attribute);
+                    }
+                }
+            });
+
+            //add composite keys
+            composites.forEach((composite -> {
+                if(composite.getEntity().equals(entity)){
+                    entity.addKey(composite);
+                }
+            }));
+        }
+
     }
 
     public List<Attribute> getDataClassAttributes(DataClass dataClass){

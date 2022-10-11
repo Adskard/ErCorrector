@@ -29,7 +29,7 @@ public class Attribute extends DataClass implements Key{
 
     @Override
     public String toString() {
-        return "Attribute{ " +
+        return "Attribute{" +
                 super.toString().substring(1,super.toString().length()-2) +
                 ", isKey=" + isKey +
                 "}\n";

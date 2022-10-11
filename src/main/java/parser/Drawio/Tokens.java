@@ -6,7 +6,6 @@ package parser.Drawio;
  * Values of XML attributes used for parsing
  * @author Adam Skarda
  */
-//TODO javadoc
 public enum Tokens {
     /**
      * Primary identification regex for Attributes, found inside style xml attribute.

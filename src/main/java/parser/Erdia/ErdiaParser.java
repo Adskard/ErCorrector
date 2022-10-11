@@ -60,6 +60,8 @@ public class ErdiaParser implements Parser {
             addVerticesToDiagram();
             addEdgesToDiagram();
             addCompositeIdentifiersToDiagram();
+            diagram.addKeysToEntities();
+            diagram.identifyWeakEntities();
         }
         catch (RuntimeException e){
             throw new CorruptedXmlException(e);
@@ -248,14 +250,14 @@ public class ErdiaParser implements Parser {
             if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.ENTITY.getValue())){
 
                 Entity entity = new Entity(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
-                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false);
+                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()));
                 diagram.addVertex(entity);
                 log.log(Level.FINER, String.format("Added entity: %s", entity));
             }
             else if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.RELATIONSHIP.getValue())){
 
                 Relationship relationship = new Relationship(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()),
-                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()), false);
+                        vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()));
                 diagram.addVertex(relationship);
                 log.log(Level.FINER, String.format("Added relationship: %s", relationship));
 
@@ -300,7 +302,7 @@ public class ErdiaParser implements Parser {
                     Entity associatedEntity = (Entity) compositeMemberEdges.get(0).getTarget();
 
                     Composite composite = new Composite(associatedEntity, vertexId);
-                    composite.addAllCompositeMembers(compositeMemberEdges);
+                    compositeMemberEdges.forEach((edge) -> composite.addCompositeMember(edge, edge.getSource()));
                     diagram.addComposite(composite);
                     log.log(Level.FINER, String.format("Added composite: %s", composite));
                 }

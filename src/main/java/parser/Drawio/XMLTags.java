@@ -5,7 +5,6 @@ package parser.Drawio;
  * XML tags and attribute names used for parsing
  * @author Adam Skarda
  */
-//TODO javadoc
 public enum XMLTags {
     CELL("mxCell"),
     PARENT_ATTRIBUTE("parent"),

@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author Adam Skarda
  */
-//TODO javadoc
-//TODO logging, error handling
+//TODO javadoc, logging
 @Log
 public class DrawioParser implements parser.Parser {
     /**
@@ -62,6 +61,7 @@ public class DrawioParser implements parser.Parser {
             categorizeElements(cells);
             addVerticesToDiagram();
             addEdgesToDiagram();
+            addCompositesToDiagram();
         }
         catch(RuntimeException e){
             throw new CorruptedXmlException(e);
@@ -110,39 +110,17 @@ public class DrawioParser implements parser.Parser {
             String styleValue = e.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).strip();
 
             if(styleValue.matches(Tokens.ATTRIBUTE.getValue())){
-                if(styleValue.matches(Tokens.MULTIVALUED_ATTRIBUTE.getValue())){
-                    diagram.addVertex(new Attribute(name, id, false));
-                }
-                else if(styleValue.matches(Tokens.KEY_ATTRIBUTE.getValue())){
-                    diagram.addVertex(new Attribute(name, id, false));
-                }
-                else if(name.matches(Tokens.WEAK_ATTRIBUTE.getValue())){
-                    Pattern pattern = Pattern.compile(">.*<");
-                    Matcher matcher = pattern.matcher(name);
-                    matcher.find();
-                    String weakAttributeName = matcher.group();
-                    weakAttributeName = weakAttributeName.substring(1, weakAttributeName.length()-1);
-                    diagram.addVertex(new Attribute(weakAttributeName,
-                            id, true));
-                }
-                else{
-                    diagram.addVertex(new Attribute(name, id, false));
-                }
+                diagram.addVertex(new Attribute(name, id, false));
             }
             else if(styleValue.matches(Tokens.RELATIONSHIP.getValue())){
-                if(styleValue.matches(Tokens.WEAK_RELATIONSHIP.getValue())){
-                    diagram.addVertex(new Relationship(name, id, true));
-                }
-                else{
-                    diagram.addVertex(new Relationship(name, id, false));
-                }
+                diagram.addVertex(new Relationship(name, id));
             }
             else{
                 if(styleValue.matches(Tokens.WEAK_ENTITY.getValue())){
-                    diagram.addVertex(new Entity(name, id,true));
+                    diagram.addVertex(new Entity(name, id));
                 }
                 else{
-                    diagram.addVertex(new Entity(name, id,false));
+                    diagram.addVertex(new Entity(name, id));
                 }
             }
         }
@@ -164,7 +142,7 @@ public class DrawioParser implements parser.Parser {
                 }
             }
             catch(RuntimeException e){
-                log.log(Level.WARNING, "Exception while parsing edge ", e);
+                log.log(Level.WARNING, String.format("Exception while parsing edge %s", e));
             }
         }
     }
@@ -233,6 +211,13 @@ public class DrawioParser implements parser.Parser {
                         .target(target)
                         .cardinality(cardinality)
                         .build());
+    }
+
+    /**
+     *
+     */
+    private void addCompositesToDiagram(){
+        //TODO Find a way to model composites in Drawio
     }
 
 }

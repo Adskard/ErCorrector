@@ -6,7 +6,9 @@
 package model;
 
 import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,21 +18,21 @@ import java.util.List;
  * @author Adam Skarda
  */
 @Getter
+@Setter
 public class Entity extends DataClass{
 
     /**
      * True if this Entity is weak, meaning it does not its own key
      */
-    private Boolean isWeak;
+    private Boolean isWeak = true;
 
     /**
      * Keys associated with this Entity
      */
     private final List<Key> keys = new LinkedList<>();
 
-    public Entity(String name, String id, Boolean isWeak) {
+    public Entity(String name, String id) {
         super(name, id);
-        this.isWeak = isWeak;
     }
 
     public void addKey(Key key){
@@ -44,7 +46,10 @@ public class Entity extends DataClass{
 
     @Override
     public String toString() {
-        return "Entity" +
-                super.toString();
+        return "Entity"  +
+                super.toString().substring(0, super.toString().length()-1) +
+                " isWeak = " + isWeak +
+                " keys: " +
+                Arrays.toString(keys.toArray());
     }
 }

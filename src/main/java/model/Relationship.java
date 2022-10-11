@@ -12,7 +12,7 @@ package model;
  */
 public class Relationship extends DataClass{
 
-    public Relationship(String name, String id, Boolean isWeak) {
+    public Relationship(String name, String id) {
         super(name, id);
     }
 

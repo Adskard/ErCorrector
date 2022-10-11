@@ -15,7 +15,7 @@ public class Runner {
     public static void main(String[] args) {
         
         String diagramsPath = "test_data_ER/erdia/";
-        String fileName = "very_complicated.xml";
+        String fileName = "mostlyCorrect.xml";
         /*
         erdia
         very_complicated.xml
@@ -40,7 +40,7 @@ public class Runner {
             log.log(Level.FINE, xmlFile.getName() + (xmlFile.canRead() ? " is readable" : " is unreadable" ));
             XMLValidator xml = new XMLValidator(xmlFile);
             //TODO delete debug print
-            System.out.println(xml.extractDiagram());
+            System.out.println(formatter.SimpleDiagramFormat.stringifyDiagram(xml.extractDiagram()));
         }
         catch(IOException | URISyntaxException | NullPointerException e){
             log.log(Level.SEVERE, "Input file exception");

@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public enum Cardinality {
     NOT_RECOGNIZED("", "Not recognized"),
-    NO_CARDINALITY("", "No cardinality"),
+    NO_CARDINALITY("", ""),
     ONE("\\s*1\\.+1\\s*","1..1"),
     ZERO_TO_ONE("\\s*0\\.+1\\s*", "0..1"),
     ZERO_TO_MANY("\\s*0\\.+[M,N,m,n]\\s*", "0..N"),
