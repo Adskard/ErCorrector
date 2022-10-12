@@ -53,6 +53,10 @@ public class Connection {
         return source.equals(dataClass);
     }
 
+    public DataClass getOtherParticipant(DataClass participant){
+        return source.equals(participant) ? target : source;
+    }
+
     public boolean connectsTo(DataClass dataClass){
         return target.equals(dataClass) || source.equals(dataClass);
     }
