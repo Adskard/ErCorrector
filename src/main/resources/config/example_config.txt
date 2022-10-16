@@ -1,0 +1,8 @@
+#Entity
+entity_count = 20
+weak_entities = 1
+attribute_multival = 5
+
+composites = 1
+ordinary
+relationships = 5

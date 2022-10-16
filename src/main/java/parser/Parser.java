@@ -15,7 +15,7 @@ public interface Parser {
      *
      * @param document Document to be parsed
      * @return Populated and connected Diagram
-     * @throws CorruptedXmlException
+     * @throws CorruptedXmlException if Document cannot be parsed
      * @see Diagram
      */
     Diagram parse(Document document) throws CorruptedXmlException;

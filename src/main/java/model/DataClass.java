@@ -47,6 +47,18 @@ public abstract class DataClass {
                 .collect(Collectors.toList());
     }
 
+    public boolean isEntity(){
+        return this instanceof Entity;
+    }
+
+    public boolean isRelationship(){
+        return this instanceof Relationship;
+    }
+
+    public boolean isAttribute(){
+        return this instanceof Attribute;
+    }
+
     public void addConnection(Connection connection){
         connections.add(connection);
     }
@@ -59,9 +71,7 @@ public abstract class DataClass {
     public boolean equals(Object o){
         if(o instanceof DataClass){
             DataClass comparedObject = (DataClass) o;
-            if(comparedObject.getId().equals(id)){
-                return true;
-            }
+            return comparedObject.getId().equals(id);
         }
         return false;
     }

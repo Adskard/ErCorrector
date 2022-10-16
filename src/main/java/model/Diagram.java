@@ -35,24 +35,23 @@ public class Diagram {
      * Attribute is always a source of a connection.
      */
     public void organizeConnections(){
-        edges.forEach((edge) -> edge.organize());
+        edges.forEach(Connection::organize);
     }
 
 
     public void identifyWeakEntities(){
-        List<Entity> entities = vertices.stream().filter((vert) -> vert instanceof Entity)
+        List<Entity> entities = vertices.stream().filter(DataClass::isEntity)
                 .map((vert)->(Entity) vert)
                 .collect(Collectors.toList());
 
         for(Entity entity : entities){
             entity.getKeys().forEach((key)->{
                 //simple key
-                if(key instanceof Attribute){
+                if(key.isSimple()){
                     entity.setIsWeak(false);
-                    return;
                 }
                 //composite
-                else if(key instanceof Composite){
+                else{
                     Composite composite = (Composite) key;
                     if(!composite.isRelationshipBased()){
                         entity.setIsWeak(false);
@@ -64,13 +63,12 @@ public class Diagram {
 
     public void addKeysToEntities(){
 
-        List<Entity> entities = vertices.stream().filter((vert) -> vert instanceof Entity)
+        List<Entity> entities = vertices.stream()
+                .filter(DataClass::isEntity)
                 .map((vert)->(Entity) vert)
                 .collect(Collectors.toList());
 
-
         for(Entity entity : entities){
-
             //add simple keys
             entity.getConnections().forEach((connection)->{
                 if(connection.isAttributeConnection()){
@@ -99,10 +97,10 @@ public class Diagram {
                         return null;
                     }
                     if(isConnectionSource(dataClass, connection)){
-                        return connection.getTarget() instanceof Attribute? (Attribute)connection.getTarget() : null;
+                        return connection.getTarget().isAttribute() ? (Attribute)connection.getTarget() : null;
                     }
                     else{
-                        return connection.getSource() instanceof Attribute ? (Attribute)connection.getSource() : null;
+                        return connection.getSource().isAttribute() ? (Attribute)connection.getSource() : null;
                     }
                         })
                 .filter(Objects::nonNull).collect(Collectors.toList());
@@ -167,7 +165,7 @@ public class Diagram {
                 Arrays.toString(edges.toArray()) +
                 "========================\n"+
                 "Composite keys\n"+
-                composites.toString() +
+                composites +
                 "========================\n"+
                 '}';
     }

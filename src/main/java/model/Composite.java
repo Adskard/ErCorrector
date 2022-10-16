@@ -37,16 +37,14 @@ public class Composite implements Key {
     }
 
     public boolean isRelationshipBased(){
-        return compositeMembers.values().stream().anyMatch((dataClass)-> dataClass instanceof Relationship);
+        return compositeMembers.values().stream().anyMatch(DataClass::isRelationship);
     }
 
     @Override
     public boolean equals(Object o){
         if(o instanceof Composite){
             Composite comparedObject = (Composite) o;
-            if(comparedObject.getId().equals(id)){
-                return true;
-            }
+            return comparedObject.getId().equals(id);
         }
         return false;
     }

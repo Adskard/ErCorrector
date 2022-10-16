@@ -42,6 +42,7 @@ public class XMLValidator {
      * @see ErdiaParser
      */
     public Diagram extractDiagram() throws SAXException, IOException, ParserConfigurationException {
+        log.log(Level.INFO, "Parsing diagram");
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(file);

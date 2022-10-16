@@ -43,7 +43,8 @@ public class DiagramOutputFormatter {
     public static String stringifyAllRelationships(Diagram diagram){
         StringBuilder builder = new StringBuilder();
 
-        diagram.getVertices().stream().filter((dataClass)-> dataClass instanceof Relationship)
+        diagram.getVertices().stream()
+                .filter(DataClass::isRelationship)
                 .map(dataClass -> (Relationship) dataClass)
                 .forEach(relationship -> builder.append(String.format("%s\n",stringifyRelationship(relationship))));
 
@@ -55,7 +56,7 @@ public class DiagramOutputFormatter {
         builder.append("\n");
 
         relationship.getConnections().stream()
-                .filter(connection -> connection.getOtherParticipant(relationship) instanceof Entity)
+                .filter(connection -> connection.getOtherParticipant(relationship).isEntity())
                 .forEach(connection -> {
                     builder.append("\t");
                     builder.append(
@@ -82,7 +83,7 @@ public class DiagramOutputFormatter {
 
 
         List<Generalization> hierarchy =  entity.getConnections().stream()
-            .filter(connection -> connection instanceof Generalization)
+            .filter(Connection::isGeneralization)
             .filter(connection -> connection.isSource(entity))
             .map(connection -> (Generalization)connection)
             .collect(Collectors.toList());
@@ -99,7 +100,7 @@ public class DiagramOutputFormatter {
         builder.append(stringifyAttributeList(entity));
 
         List<Composite> composites = entity.getKeys().stream()
-                .filter(key -> key instanceof Composite)
+                .filter(key -> !key.isSimple())
                 .map(key -> (Composite) key)
                 .collect(Collectors.toList());
 
@@ -111,7 +112,7 @@ public class DiagramOutputFormatter {
             composite.getCompositeMembers().values().forEach(
                     dataClass -> builder.append(
                             String.format("%s%s%s",
-                                    dataClass instanceof Relationship ? "#" : "",
+                                    dataClass.isRelationship() ? "#" : "",
                                     dataClass.getName(),
                                     compositeMemberSeparator
                             )));
@@ -129,7 +130,8 @@ public class DiagramOutputFormatter {
     public static String stringifyAllEntities(Diagram diagram){
         StringBuilder builder = new StringBuilder();
 
-        diagram.getVertices().stream().filter((dataClass)-> dataClass instanceof Entity)
+        diagram.getVertices().stream()
+                .filter(DataClass::isEntity)
                 .map(dataClass -> (Entity) dataClass)
                 .forEach(entity -> builder.append(String.format("%s\n",stringifyEntity(entity))));
 
@@ -139,7 +141,7 @@ public class DiagramOutputFormatter {
     public static String stringifyAttributeList(DataClass dataClass){
         StringBuilder builder = new StringBuilder();
         List<Connection> attributeConnections = dataClass.getConnections().stream()
-                .filter(connection -> connection.getOtherParticipant(dataClass) instanceof Attribute)
+                .filter(connection -> connection.getOtherParticipant(dataClass).isAttribute())
                 .filter(connection -> {
                     Attribute attribute = (Attribute) connection.getOtherParticipant(dataClass);
                     if(visitedAttributes.contains(attribute)){

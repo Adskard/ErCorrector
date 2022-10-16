@@ -11,7 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 
 /**
  * Connection denoting a generalization. Where target is the ancestor
@@ -40,16 +39,11 @@ public class Generalization extends Connection{
         this.disjointness = disjointness;
     }
 
-    public Generalization(String id, DataClass source, DataClass target, List<String> description) {
-        super(id, source, target, description);
-    }
-
     /**
      * Do not change generalization source and target
      */
     @Override
     public void organize(){
-        return;
     }
 
     @Override

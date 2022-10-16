@@ -66,7 +66,8 @@ public class Connection {
     }
 
     public boolean hasCardinality(){
-        return Objects.nonNull(cardinality);
+        return !cardinality.equals(Cardinality.NO_CARDINALITY)
+                && !cardinality.equals(Cardinality.NOT_RECOGNIZED);
     }
 
     public boolean isFullyConnected(){
@@ -113,12 +114,12 @@ public class Connection {
      * Attribute is always a source of a connection.
      */
     public void organize(){
-        if(target instanceof Attribute){
+        if(target.isAttribute()){
             DataClass h = source;
             source = target;
             target = h;
         }
-        else if(source instanceof Entity && target instanceof  Relationship){
+        else if(source.isEntity() && target.isRelationship()){
             DataClass h = source;
             source = target;
             target = h;
@@ -130,7 +131,8 @@ public class Connection {
     }
 
     public boolean isRelationshipConnection(){
-        return source instanceof Relationship || target instanceof Relationship;
+        return (source instanceof Relationship && target instanceof Entity) ||
+                (source instanceof Entity && target instanceof Relationship);
     }
 
     public boolean isGeneralization(){
@@ -141,9 +143,7 @@ public class Connection {
     public boolean equals(Object o){
         if(o instanceof Connection){
             Connection comparedObject = (Connection) o;
-            if(comparedObject.getId().equals(id)){
-                return true;
-            }
+            return comparedObject.getId().equals(id);
         }
         return false;
     }
