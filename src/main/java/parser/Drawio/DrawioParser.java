@@ -142,7 +142,7 @@ public class DrawioParser implements parser.Parser {
                 }
             }
             catch(RuntimeException e){
-                log.log(Level.WARNING, String.format("Exception while parsing edge %s", e));
+                log.log(Level.WARNING, "Exception while parsing edge", e);
             }
         }
     }

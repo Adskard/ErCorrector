@@ -1,5 +1,8 @@
 package corrector;
 
+import corrector.checker.DefectChecker;
+import corrector.configuration.ConfigExtractor;
+import corrector.defect.Defect;
 import lombok.Getter;
 import lombok.extern.java.Log;
 import model.*;
@@ -24,14 +27,12 @@ public class AssignmentGrader {
     private final List<Defect> defects = new LinkedList<>();
     private final Diagram diagram;
     private final Properties properties;
-    private final BasicCorrector basicCorrector;
-    private final AssignmentCorrector assignmentCorrector;
+    private final DefectChecker defectChecker;
 
     public AssignmentGrader(Properties config, Diagram diagram){
         this.diagram = diagram;
         this.properties = config;
-        basicCorrector = new BasicCorrector(diagram, config);
-        assignmentCorrector = new AssignmentCorrector(diagram, config);
+        defectChecker = new DefectChecker(diagram, new ConfigExtractor(config));
     }
 
     /**
@@ -39,8 +40,15 @@ public class AssignmentGrader {
      */
     public void grade(){
         log.log(Level.INFO, "Grading diagram");
-        defects.addAll(basicCorrector.findDefects());
-        defects.addAll(assignmentCorrector.findDefects());
 
+        defects.addAll(defectChecker.findDefects());
+        points = computePoints(defects);
+    }
+
+    private float computePoints(List<Defect> defects){
+        return  defects.stream()
+                .filter(Defect::getPresent)
+                .map(Defect::getPoints)
+                .reduce(0.0f, Float::sum);
     }
 }

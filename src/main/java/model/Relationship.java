@@ -16,6 +16,21 @@ public class Relationship extends DataClass{
         super(name, id);
     }
 
+    public boolean isRecursive(){
+        long all = super.getConnections().stream()
+                .map(connection -> connection.getOtherParticipant(this))
+                .filter(DataClass::isEntity)
+                .count();
+
+        long distinct = super.getConnections().stream()
+                .map(connection -> connection.getOtherParticipant(this))
+                .filter(DataClass::isEntity)
+                .distinct()
+                .count();
+
+        return distinct < all;
+    }
+
     @Override
     public String toString() {
         return "Relationship" +

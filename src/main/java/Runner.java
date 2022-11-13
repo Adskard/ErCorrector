@@ -41,7 +41,7 @@ public class Runner {
     public static void main(String[] args) {
         
         String diagramsPath = "test_data_ER/erdia/";
-        String fileName = "very_complicated.xml";
+        String fileName = "shop_correct_erdia.xml";
         String configPath = "config/example_config.txt";
         try{
             //Parse model

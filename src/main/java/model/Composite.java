@@ -40,6 +40,12 @@ public class Composite implements Key {
         return compositeMembers.values().stream().anyMatch(DataClass::isRelationship);
     }
 
+    public Optional<Connection> getRelationshipConnection(){
+        return compositeMembers.keySet().stream()
+                .filter(Connection::isRelationshipConnection)
+                .findAny();
+    }
+
     @Override
     public boolean equals(Object o){
         if(o instanceof Composite){

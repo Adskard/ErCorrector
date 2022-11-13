@@ -130,9 +130,7 @@ public class DiagramOutputFormatter {
     public static String stringifyAllEntities(Diagram diagram){
         StringBuilder builder = new StringBuilder();
 
-        diagram.getVertices().stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
+        diagram.getEntities()
                 .forEach(entity -> builder.append(String.format("%s\n",stringifyEntity(entity))));
 
         return builder.toString();

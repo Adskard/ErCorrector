@@ -38,6 +38,27 @@ public class Diagram {
         edges.forEach(Connection::organize);
     }
 
+    public List<Entity> getEntities(){
+        return vertices.stream()
+                .filter(DataClass::isEntity)
+                .map(dataClass -> (Entity) dataClass)
+                .collect(Collectors.toList());
+    }
+
+    public List<Attribute> getAttributes(){
+        return vertices.stream()
+                .filter(DataClass::isAttribute)
+                .map(dataClass -> (Attribute) dataClass)
+                .collect(Collectors.toList());
+    }
+
+    public List<Relationship> getRelationships(){
+        return vertices.stream()
+                .filter(DataClass::isRelationship)
+                .map(dataClass -> (Relationship) dataClass)
+                .collect(Collectors.toList());
+    }
+
 
     public void identifyWeakEntities(){
         List<Entity> entities = vertices.stream().filter(DataClass::isEntity)
@@ -45,20 +66,52 @@ public class Diagram {
                 .collect(Collectors.toList());
 
         for(Entity entity : entities){
-            entity.getKeys().forEach((key)->{
-                //simple key
-                if(key.isSimple()){
-                    entity.setIsWeak(false);
-                }
-                //composite
-                else{
-                    Composite composite = (Composite) key;
-                    if(!composite.isRelationshipBased()){
-                        entity.setIsWeak(false);
-                    }
-                }
-            });
+            entity.setIsWeak(isEntityWeak(entity));
         }
+    }
+
+    /**
+     *
+     * @param entity
+     * @return true if entity is weak
+     */
+    public boolean isEntityWeak(Entity entity){
+        boolean hasRelationshipComposite = false;
+
+        //is not identified by a key
+        for(Key key : entity.getKeys()){
+
+            //simple key
+            if(key.isSimple()){
+                return false;
+            }
+
+            //composite key
+            else{
+                Composite composite = (Composite) key;
+                if(composite.isRelationshipBased()){
+                    hasRelationshipComposite = true;
+                }
+                else{
+                    return false;
+                }
+            }
+        }
+
+        //ancestor keys
+        List<Entity> ancestors = entity.getAdjacentDataClasses().stream()
+                .filter(DataClass::isEntity)
+                .map(dataClass -> (Entity) dataClass)
+                .collect(Collectors.toList());
+
+        for(Entity ancestor : ancestors){
+            boolean weakAncestor = isEntityWeak(ancestor);
+            if(!weakAncestor){
+                return false;
+            }
+        }
+
+        return hasRelationshipComposite;
     }
 
     public void addKeysToEntities(){
