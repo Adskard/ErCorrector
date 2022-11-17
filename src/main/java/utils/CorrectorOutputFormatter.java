@@ -16,9 +16,15 @@ public class CorrectorOutputFormatter {
         builder.append("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n");
         defects.stream()
                 //.filter(Defect::getPresent)
-                .forEach(defect -> builder.append(String.format("\tDefect: %s - %s\n",
-                defect.getType().getMessage(), defect.getAdditionalInfo())));
+                .forEach(defect -> builder.append(stringifyDefect(defect)));
         builder.append(String.format("Final points: %f", points));
+        return builder.toString();
+    }
+
+    private static String stringifyDefect(Defect defect){
+        StringBuilder builder = new StringBuilder();
+        
+
         return builder.toString();
     }
 

@@ -388,7 +388,7 @@ public class DefectChecker {
      * It achieves this by doing a DFS and comparing visited nodes to diagram vertices.
      */
     private void checkDiagramComponent(){
-        /*log.log(Level.FINE, "Checking diagram component");
+        log.log(Level.FINE, "Checking diagram component");
 
         DefectType defectType = DefectType.ONE_COMPONENT;
         String defaultValue = "2.01";
@@ -398,62 +398,25 @@ public class DefectChecker {
         var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
 
         try{
-            List<String> values = getConfigValues(defectType.getConfigKey(), defaultValue);
 
-            float taskPoints = Float.parseFloat(values.get(0));
 
-            List<DataClass> notInMainComponent = getMissingVerticesFromMainComponent(diagram);
+            List<DataClass> notInMainComponent = diagram.getMissingVerticesFromMainComponent();
 
             if(!notInMainComponent.isEmpty()){
                 info.append(String.format("Vertices not in main component: %s", notInMainComponent));
                 defectPresence = true;
             }
 
-            if (!defectPresence) points += taskPoints;
-
             defects.add(resultingDefectBuilder
                     .type(defectType)
                     .present(defectPresence)
-                    .points(taskPoints)
                     .additionalInfo(info.toString())
                     .incorrectObjects(notInMainComponent)
                     .build());
         }
         catch(RuntimeException ex){
             log.log(Level.WARNING, "Exception during diagram component checking", ex);
-        }*/
-    }
-
-    /**
-     * Gets vertices not connected by an edge to main diagram component.
-     * If resulting list is empty, then the diagram has a single component.
-     * Implementation using DFS.
-     * Main component is one that contains diagram vertex with index 0.
-     *
-     * @param diagram
-     * @return list of vertices not in main component
-     */
-    private List<DataClass> getMissingVerticesFromMainComponent(Diagram diagram){
-        List<DataClass> visited = new LinkedList<>();
-        Stack<DataClass> toBeVisited = new Stack<>();
-        DataClass first = diagram.getVertices().get(0);
-        toBeVisited.push(first);
-
-        //DFS
-        while(!toBeVisited.isEmpty()){
-            DataClass vertex = toBeVisited.pop();
-            visited.add(vertex);
-
-            for(DataClass adjacent : vertex.getAdjacentDataClasses()){
-                if(!visited.contains(adjacent) && !toBeVisited.contains(adjacent)){
-                    toBeVisited.push(adjacent);
-                }
-            }
         }
-
-        return diagram.getVertices().stream()
-                .filter(dataClass -> !visited.contains(dataClass))
-                .collect(Collectors.toList());
     }
 
     /**
@@ -463,8 +426,7 @@ public class DefectChecker {
         log.log(Level.FINE, "Checking entity identification");
 
         List<DataClass> entitiesWithoutKeys = diagram.getEntities().stream()
-                .filter(entity -> !entity.getIsWeak())
-                .filter(entity -> !checkEntityOwnId(entity))
+                .filter(entity -> entity.getKeys().isEmpty())
                 .collect(Collectors.toList());
 
         if(!entitiesWithoutKeys.isEmpty()){
@@ -478,32 +440,7 @@ public class DefectChecker {
         }
     }
 
-    /**
-     *
-     * @param entity
-     * @return true if entity is identified
-     */
-    private boolean checkEntityOwnId(Entity entity){
-        boolean hasSimpleKey = entity.getKeys().stream()
-                .anyMatch(Key::isSimple);
-        if(hasSimpleKey){
-            return true;
-        }
 
-        boolean hasNonWeakComposite = entity.getKeys().stream()
-                .filter(key -> !key.isSimple())
-                .map(key -> (Composite) key)
-                .anyMatch(composite -> !composite.isRelationshipBased());
-        if(hasNonWeakComposite){
-            return true;
-        }
-
-        boolean hasAncestorId = entity.getAdjacentDataClasses().stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
-                .anyMatch(entity1 -> checkEntityOwnId(entity1));
-        return hasAncestorId;
-    }
 
 
     /**
@@ -697,29 +634,12 @@ public class DefectChecker {
         for(Composite composite : possibleIds){
             Optional<Connection> relationshipConnection = composite.getRelationshipConnection();
             if(relationshipConnection.isPresent()){
-                boolean isId = isIdentifyingConnection(relationshipConnection.get(), entity);
+                boolean isId = relationshipConnection.get().isIdentifyingConnection(entity);
                 if(isId){
                     return true;
                 }
             }
         }
         return false;
-    }
-
-    /**
-     *
-     * @param connection relationship to weak entity connection
-     * @param entity weak entity
-     * @return true if connection identifies a weak entity
-     */
-    private boolean isIdentifyingConnection(Connection connection, Entity entity){
-        if(!connection.getCardinality().equals(Cardinality.ONE)){
-            return false;
-        }
-        return connection.getOtherParticipant(entity).getAdjacentDataClasses()
-                .stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
-                .anyMatch(entity1 -> checkEntityOwnId(entity1));
     }
 }

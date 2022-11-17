@@ -11,9 +11,14 @@ import model.Diagram;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class BasicDefectChecker {
+
+    private static Defect basicDefectCheckTemplate(DefectType defectType, ConfigValue configValue, Supplier<List> checkSupplier){
+        return null;
+    }
     public static Defect checkMultivaluedAttributes(Diagram diagram, DefectType defectType, ConfigValue value){
 
         StringBuilder info = new StringBuilder();

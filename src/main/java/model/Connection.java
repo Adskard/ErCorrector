@@ -70,6 +70,22 @@ public class Connection {
                 && !cardinality.equals(Cardinality.NOT_RECOGNIZED);
     }
 
+    /**
+     *
+     * @param entity weak entity
+     * @return true if connection identifies a weak entity
+     */
+    public boolean isIdentifyingConnection(Entity entity){
+        if(!cardinality.equals(Cardinality.ONE)){
+            return false;
+        }
+        return this.getOtherParticipant(entity).getAdjacentDataClasses()
+                .stream()
+                .filter(DataClass::isEntity)
+                .map(dataClass -> (Entity) dataClass)
+                .anyMatch(connectedEntity -> !connectedEntity.getIsWeak());
+    }
+
     public boolean isFullyConnected(){
         return Objects.nonNull(target) && Objects.nonNull(source);
     }

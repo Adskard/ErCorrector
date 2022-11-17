@@ -61,57 +61,43 @@ public class Diagram {
 
 
     public void identifyWeakEntities(){
-        List<Entity> entities = vertices.stream().filter(DataClass::isEntity)
-                .map((vert)->(Entity) vert)
-                .collect(Collectors.toList());
+        List<Entity> entities = this.getEntities();
 
         for(Entity entity : entities){
-            entity.setIsWeak(isEntityWeak(entity));
+            entity.isWeakEntity();
         }
     }
 
+
     /**
+     * Gets vertices not connected by an edge to main diagram component.
+     * If resulting list is empty, then the diagram has a single component.
+     * Implementation using DFS.
+     * Main component is one that contains diagram vertex with index 0.
      *
-     * @param entity
-     * @return true if entity is weak
+     * @return list of vertices not in main component
      */
-    public boolean isEntityWeak(Entity entity){
-        boolean hasRelationshipComposite = false;
+    public List<DataClass> getMissingVerticesFromMainComponent(){
+        List<DataClass> visited = new LinkedList<>();
+        Stack<DataClass> toBeVisited = new Stack<>();
+        DataClass first = vertices.get(0);
+        toBeVisited.push(first);
 
-        //is not identified by a key
-        for(Key key : entity.getKeys()){
+        //DFS
+        while(!toBeVisited.isEmpty()){
+            DataClass vertex = toBeVisited.pop();
+            visited.add(vertex);
 
-            //simple key
-            if(key.isSimple()){
-                return false;
-            }
-
-            //composite key
-            else{
-                Composite composite = (Composite) key;
-                if(composite.isRelationshipBased()){
-                    hasRelationshipComposite = true;
-                }
-                else{
-                    return false;
+            for(DataClass adjacent : vertex.getAdjacentDataClasses()){
+                if(!visited.contains(adjacent) && !toBeVisited.contains(adjacent)){
+                    toBeVisited.push(adjacent);
                 }
             }
         }
 
-        //ancestor keys
-        List<Entity> ancestors = entity.getAdjacentDataClasses().stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
+        return vertices.stream()
+                .filter(dataClass -> !visited.contains(dataClass))
                 .collect(Collectors.toList());
-
-        for(Entity ancestor : ancestors){
-            boolean weakAncestor = isEntityWeak(ancestor);
-            if(!weakAncestor){
-                return false;
-            }
-        }
-
-        return hasRelationshipComposite;
     }
 
     public void addKeysToEntities(){

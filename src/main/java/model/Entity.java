@@ -6,11 +6,11 @@
 package model;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The class Entity is a direct mapping of an entity from Entity-Relationship
@@ -18,7 +18,6 @@ import java.util.List;
  * @author Adam Skarda
  */
 @Getter
-@Setter
 public class Entity extends DataClass{
 
     /**
@@ -41,6 +40,49 @@ public class Entity extends DataClass{
 
     public List<Key> getKeys(){
         return new LinkedList<>(keys);
+    }
+
+    public boolean isWeakEntity(){
+
+        boolean hasRelationshipComposite = false;
+
+        //is not identified by a key
+        for(Key key : this.getKeys()){
+
+            //simple key
+            if(key.isSimple()){
+                this.isWeak = false;
+                return false;
+            }
+
+            //composite key
+            else{
+                Composite composite = (Composite) key;
+                if(composite.isRelationshipBased()){
+                    hasRelationshipComposite = true;
+                }
+                else{
+                    this.isWeak = false;
+                    return false;
+                }
+            }
+        }
+
+        //ancestor keys
+        List<Entity> ancestors = this.getAdjacentDataClasses().stream()
+                .filter(DataClass::isEntity)
+                .map(dataClass -> (Entity) dataClass)
+                .collect(Collectors.toList());
+
+        for(Entity ancestor : ancestors){
+            if(!ancestor.isWeakEntity()){
+                this.isWeak = false;
+                return false;
+            }
+        }
+
+        this.isWeak = hasRelationshipComposite;
+        return hasRelationshipComposite;
     }
 
 
