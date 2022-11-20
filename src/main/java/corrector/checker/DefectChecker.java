@@ -9,6 +9,8 @@ import corrector.defect.BasicDefect;
 import corrector.defect.Defect;
 import corrector.defect.QuantityDefect;
 import corrector.defect.UsageDefect;
+import corrector.struct.CardinalityPair;
+import corrector.struct.HierarchyPair;
 import enums.Cardinality;
 import enums.DefectType;
 
@@ -81,6 +83,7 @@ public class DefectChecker {
         checkRecursiveRelationshipCount();
         checkStructuredAttributeCount();
         checkCardinalityUsage();
+        checkCardinalityPairUsage();
     }
 
 
@@ -316,53 +319,21 @@ public class DefectChecker {
      * Checks types of cardinalities used and their respective count.
      */
     private void checkCardinalityUsage(){
-        /*log.fine("Checking cardinality usage");
+        log.fine("Checking cardinality usage");
 
         DefectType defectType = DefectType.CARDINALITY_TYPE_USAGE;
-        boolean defectPresence = false;
-        String defaultValue = "";
-        StringBuilder info = new StringBuilder();
 
-        var resultingDefectBuilder = UsageDefect.<Cardinality>usageBuilder();
-
-        if(!isEnabledInConfig(defectType.getConfigKey())) return;
+        if(!extractor.isEnabledInConfig(defectType)) return;
 
         try{
-            List<String> values = getConfigValues(defectType.getConfigKey(), defaultValue);
+            UsageConfigValue<Cardinality> values = (UsageConfigValue<Cardinality>) extractor.getConfigValue(defectType);
 
-            List<Cardinality> expectedCardinalities = getCardinalitiesFromValues(values.subList(0,values.size()-1));
-
-            List<Cardinality> actualCardinalities = diagram.getEdges().stream()
-                    .filter(Connection::hasCardinality)
-                    .map(Connection::getCardinality)
-                    .distinct()
-                    .collect(Collectors.toList());
-
-            List<Cardinality> missingCardinalities = expectedCardinalities.stream()
-                    .filter(cardinality -> !actualCardinalities.contains(cardinality))
-                    .collect(Collectors.toList());
-
-            if (!missingCardinalities.isEmpty()) {
-                info.append(String.format("Missing cardinalities: %s", missingCardinalities));
-                defectPresence = true;
-            }
-
-            float taskPoints = Float.parseFloat(values.get(values.size()-1));
-
-            if(!defectPresence) points += taskPoints;
-
-            defects.add(resultingDefectBuilder
-                    .type(defectType)
-                    .present(defectPresence)
-                    .points(taskPoints)
-                    .additionalInfo(info.toString())
-                    .expected(expectedCardinalities)
-                    .actual(actualCardinalities)
-                    .build());
+            Defect defect = UsageDefectChecker.checkCardinality(diagram, defectType, values);
+            defects.add(defect);
         }
         catch(RuntimeException ex){
             log.log(Level.WARNING, "Error during cardinality usage checking!", ex);
-        }*/
+        }
     }
 
 
@@ -370,7 +341,22 @@ public class DefectChecker {
      * Checks hierarchy usage in diagram. How many were used, which types were used.
      */
     private void checkHierarchyUsage(){
+        log.log(Level.FINE, "Checking hierarchy pairs");
 
+        DefectType defectType = DefectType.HIERARCHY_USAGE;
+
+        if(!extractor.isEnabledInConfig(defectType)) return;
+
+        try{
+            UsageConfigValue<HierarchyPair> values = (UsageConfigValue<HierarchyPair>) extractor
+                    .getConfigValue(defectType);
+
+            Defect defect = UsageDefectChecker.checkHierarchy(diagram, defectType, values);
+            defects.add(defect);
+        }
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error during hierarchy pair usage checking!", ex);
+        }
     }
 
 
@@ -378,7 +364,21 @@ public class DefectChecker {
      * Checks for cardinality pair usage..
      */
     private void checkCardinalityPairUsage(){
+        log.log(Level.FINE, "Checking cardinality pairs");
 
+        DefectType defectType = DefectType.CARDINALITY_PAIR_USAGE;
+
+        if(!extractor.isEnabledInConfig(defectType)) return;
+
+        try{
+            UsageConfigValue<CardinalityPair> values = (UsageConfigValue<CardinalityPair>) extractor.getConfigValue(defectType);
+
+            Defect defect = UsageDefectChecker.checkCardinalityPairs(diagram, defectType, values);
+            defects.add(defect);
+        }
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error during cardinality pair usage checking!", ex);
+        }
     }
 
 

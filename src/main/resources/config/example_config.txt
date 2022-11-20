@@ -69,7 +69,7 @@ composite_id = 1233333, 111111111, 1.0
 
 
 #Hierarchy used
-hierarchy = 1, 5, all
+hierarchy = 1, 5, 0.1
 
 #number of entities in a diagram
 #minimal_count : int, maximal_count : int, points_if_correct : float

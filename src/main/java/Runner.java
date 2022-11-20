@@ -5,8 +5,8 @@ import model.Diagram;
 import org.xml.sax.SAXException;
 import parser.XMLValidator;
 import utils.ConfigLoader;
-import utils.CorrectorOutputFormatter;
-import utils.DiagramOutputFormatter;
+import output.CorrectorOutputFormatter;
+import output.DiagramOutputFormatter;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -41,7 +41,7 @@ public class Runner {
     public static void main(String[] args) {
         
         String diagramsPath = "test_data_ER/erdia/";
-        String fileName = "shop_correct_erdia.xml";
+        String fileName = "allErParts_erdia.xml";
         String configPath = "config/example_config.txt";
         try{
             //Parse model

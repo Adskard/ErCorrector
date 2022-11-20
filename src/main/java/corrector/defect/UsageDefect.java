@@ -3,6 +3,7 @@ package corrector.defect;
 import enums.DefectType;
 import lombok.Builder;
 import lombok.extern.java.Log;
+import output.stringifier.DefectVisitor;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,6 +19,11 @@ public class UsageDefect<T> extends Defect{
         super(type, present, points, additionalInfo);
         this.expected = expected;
         this.actual = actual;
+    }
+
+    @Override
+    public String accept(DefectVisitor defectVisitor) {
+        return defectVisitor.visit(this);
     }
 
     public List<T> getExpected(){

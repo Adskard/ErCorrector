@@ -7,7 +7,9 @@ import corrector.configuration.value.ConfigValue;
 import corrector.configuration.value.QuantityConfigValue;
 import corrector.configuration.value.UsageConfigValue;
 import enums.Cardinality;
+import enums.Coverage;
 import enums.DefectType;
+import enums.Disjointness;
 import exception.ConfigurationException;
 
 import java.util.*;
@@ -118,12 +120,55 @@ public class ConfigExtractor {
     }
 
     private List<CardinalityPair> getCardinalityPairsFromValues(List<String> values) throws ConfigurationException{
+        List<Cardinality> cardinalities = new LinkedList<>();
+            cardinalities.add(Cardinality.ZERO_TO_ONE);
+            cardinalities.add(Cardinality.ONE);
+            cardinalities.add(Cardinality.ONE_TO_MANY);
+            cardinalities.add(Cardinality.ZERO_TO_MANY);
+
         List<CardinalityPair> pairs = new LinkedList<>();
+
+        if(values.get(0).equalsIgnoreCase(confCardinalityAll)){
+            return CardinalityPair.fromCardinalityList(cardinalities);
+        }
+
+        for(String val : values){
+            String[] cardinalityString = val.split(confPairSeparator);
+            Cardinality first = Cardinality.decideCardinality(cardinalityString[0]);
+            Cardinality second = Cardinality.decideCardinality(cardinalityString[1]);
+
+            if(first.equals(Cardinality.NOT_RECOGNIZED) || second.equals(Cardinality.NOT_RECOGNIZED)){
+                throw new ConfigurationException(String.format("Cardinality pair %s not recognized", val));
+            }
+
+            pairs.add(new CardinalityPair(first, second));
+        }
+
         return pairs;
     }
 
     private List<HierarchyPair> getHierarchyPairsFromValues(List<String> values) throws ConfigurationException{
         List<HierarchyPair> pairs = new LinkedList<>();
+        if(values.get(0).equalsIgnoreCase(confCardinalityAll)){
+            pairs.add(new HierarchyPair(Coverage.COMPLETE, Disjointness.EXCLUSIVE));
+            pairs.add(new HierarchyPair(Coverage.PARTIAL, Disjointness.OVERLAPPING));
+            pairs.add(new HierarchyPair(Coverage.PARTIAL, Disjointness.EXCLUSIVE));
+            pairs.add(new HierarchyPair(Coverage.COMPLETE, Disjointness.OVERLAPPING));
+            return pairs;
+        }
+
+        for(String val : values){
+            String[] pair = val.split(confPairSeparator);
+            Coverage coverage = Coverage.decideCoverage(pair[0]);
+            Disjointness disjointness = Disjointness.decideDisjointness(pair[1]);
+
+            if(coverage.equals(Coverage.NOT_RECOGNIZED) || disjointness.equals(Disjointness.NOT_RECOGNIZED)) {
+                throw new ConfigurationException(String.format("Hierarchy type not recognized", val));
+            }
+
+            pairs.add(new HierarchyPair(coverage, disjointness));
+        }
+
         return pairs;
     }
 
@@ -147,7 +192,7 @@ public class ConfigExtractor {
 
         for(String val : values){
             Cardinality cardinality = Cardinality.decideCardinality(val);
-            if(cardinalities.equals(Cardinality.NOT_RECOGNIZED)){
+            if(cardinality.equals(Cardinality.NOT_RECOGNIZED)){
                 throw new ConfigurationException(String.format("Cardinality %s not recognized", val));
             }
             cardinalities.add(cardinality);

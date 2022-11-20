@@ -4,6 +4,7 @@ import enums.DefectType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.java.Log;
+import output.stringifier.DefectVisitor;
 
 @Getter
 @Log
@@ -19,5 +20,10 @@ public class QuantityDefect extends Defect{
         this.min = min;
         this.max = max;
         this.actual = actual;
+    }
+
+    @Override
+    public String accept(DefectVisitor defectVisitor) {
+        return defectVisitor.visit(this);
     }
 }

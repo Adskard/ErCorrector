@@ -40,14 +40,13 @@ public class AssignmentGrader {
      */
     public void grade(){
         log.log(Level.INFO, "Grading diagram");
-
         defects.addAll(defectChecker.findDefects());
         points = computePoints(defects);
     }
 
     private float computePoints(List<Defect> defects){
         return  defects.stream()
-                .filter(Defect::getPresent)
+                .filter(defect -> !defect.getPresent())
                 .map(Defect::getPoints)
                 .reduce(0.0f, Float::sum);
     }

@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
+import output.stringifier.DefectStringifier;
+import output.stringifier.DefectVisitor;
 
 @Getter
 @Setter
 @Log
-public class Defect {
+public class Defect implements Host{
     private final DefectType type;
     private final Boolean present;
     private final String additionalInfo;
@@ -22,4 +24,10 @@ public class Defect {
         this.additionalInfo = additionalInfo;
         this.points = points;
     }
+
+    @Override
+    public String accept(DefectVisitor defectVisitor) {
+        return defectVisitor.visit(this);
+    }
+
 }
