@@ -120,14 +120,44 @@ public class QuantityDefectChecker {
     public static Defect checkNaryRelationshipCount(Diagram diagram, DefectType defectType,
                                                     NaryRelationshipConfigValue value) throws ConfigurationException{
 
-        Supplier<Long> actualRelationshipCount = () -> diagram.getRelationships().stream()
+        boolean defectPresence = false;
+        StringBuilder info = new StringBuilder();
+        var resultingDefectBuilder = QuantityDefect.quantityBuilder();
+
+        int expectedMin = value.getMin();
+        int expectedMax = value.getMax();
+
+        if(expectedMax < expectedMin){
+            info.append(String.format("Minimum count %s is higher than maximum %s", expectedMin, expectedMax));
+            throw new ConfigurationException(info.toString());
+        }
+
+        long actualCount = diagram.getRelationships().stream()
                 .filter(relationship -> value.getConnections() <= relationship.getAdjacentDataClasses()
                         .stream()
                         .filter(DataClass::isEntity)
                         .distinct().count())
                 .count();
 
-        return quantityDefectTemplate(defectType, value, actualRelationshipCount);
+        if(actualCount < expectedMin || actualCount > expectedMax){
+            info.append(String.format("Counting relationships with at least %s connections.", value.getConnections()));
+            info.append(String.format(" Expected %s  <%s, %s> was %s", defectType.getMessage(),
+                    expectedMin, expectedMax, actualCount));
+            defectPresence = true;
+        }
+
+        float taskPoints = value.getPoints();
+
+
+        return resultingDefectBuilder
+                .type(defectType)
+                .present(defectPresence)
+                .points(taskPoints)
+                .additionalInfo(info.toString())
+                .min(expectedMin)
+                .max(expectedMax)
+                .actual((int)actualCount)
+                .build();
     }
 
     public static Defect checkMultipleIdentificationsCount(Diagram diagram, DefectType defectType,

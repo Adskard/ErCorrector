@@ -7,8 +7,6 @@ import corrector.configuration.value.QuantityConfigValue;
 import corrector.configuration.value.UsageConfigValue;
 import corrector.defect.BasicDefect;
 import corrector.defect.Defect;
-import corrector.defect.QuantityDefect;
-import corrector.defect.UsageDefect;
 import corrector.struct.CardinalityPair;
 import corrector.struct.HierarchyPair;
 import enums.Cardinality;
@@ -391,28 +389,12 @@ public class DefectChecker {
         log.log(Level.FINE, "Checking diagram component");
 
         DefectType defectType = DefectType.ONE_COMPONENT;
-        String defaultValue = "2.01";
-        boolean defectPresence = false;
-        StringBuilder info = new StringBuilder();
 
-        var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
+        if(!extractor.isEnabledInConfig(defectType)) return;
 
         try{
-
-
-            List<DataClass> notInMainComponent = diagram.getMissingVerticesFromMainComponent();
-
-            if(!notInMainComponent.isEmpty()){
-                info.append(String.format("Vertices not in main component: %s", notInMainComponent));
-                defectPresence = true;
-            }
-
-            defects.add(resultingDefectBuilder
-                    .type(defectType)
-                    .present(defectPresence)
-                    .additionalInfo(info.toString())
-                    .incorrectObjects(notInMainComponent)
-                    .build());
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkDiagramComponent(diagram, defectType,value));
         }
         catch(RuntimeException ex){
             log.log(Level.WARNING, "Exception during diagram component checking", ex);
@@ -425,23 +407,18 @@ public class DefectChecker {
     private void checkAllEntityIds(){
         log.log(Level.FINE, "Checking entity identification");
 
-        List<DataClass> entitiesWithoutKeys = diagram.getEntities().stream()
-                .filter(entity -> entity.getKeys().isEmpty())
-                .collect(Collectors.toList());
+        DefectType defectType = DefectType.EVERY_ENTITY_IDENTIFIED;
 
-        if(!entitiesWithoutKeys.isEmpty()){
-            String sep = "\n";
-            StringBuilder builder = new StringBuilder("Diagram contains entities without keys:\n");
-            entitiesWithoutKeys.forEach(dataClass -> builder.append(String.format("\t\t%s%s",dataClass.getName(),sep)));
-            //defects.add(new Defect(DefectType.EVERY_ENTITY_IDENTIFIED, true, builder.toString(), ));
+        if(!extractor.isEnabledInConfig(defectType)) return;
+
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkAllEntityIds(diagram, defectType, value));
         }
-        else{
-            //defects.add(new Defect(DefectType.EVERY_ENTITY_IDENTIFIED, false, "Entities are identified", ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Exception during all entity identification checking checking", ex);
         }
     }
-
-
-
 
     /**
      * Checks if all attributes with cardinality connection are proper multivalued attributes
@@ -470,25 +447,16 @@ public class DefectChecker {
     private void checkWeakEntities(){
         log.log(Level.FINE, "Checking weak entities");
 
-        List<Entity> weakEntities = diagram.getEntities().stream()
-                .filter(Entity::getIsWeak)
-                .collect(Collectors.toList());
+        DefectType defectType = DefectType.WEAK_ENTITY_IDENTIFIED;
 
-        List<Entity> wrongUsages = new LinkedList<>();
+        if(!extractor.isEnabledInConfig(defectType))   return;
 
-        for(Entity entity : weakEntities){
-            if(!checkWeakEntityIdentification(entity)){
-                wrongUsages.add(entity);
-            }
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkWeakEntities(diagram, defectType, value));
         }
-
-        if(wrongUsages.isEmpty()){
-            //defects.add(new Defect(DefectType.WEAK_ENTITY_IDENTIFIED, false, "", ));
-        }
-        else{
-            StringBuilder builder = new StringBuilder("Weak entities are misused:");
-            wrongUsages.forEach(entity -> builder.append(String.format("\n\t\t%s",entity.getName())));
-            //defects.add(new Defect(DefectType.WEAK_ENTITY_IDENTIFIED, true, builder.toString(), ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error checking identification of weak entities!", ex);
         }
 
     }
@@ -499,21 +467,17 @@ public class DefectChecker {
      */
     private void checkCardinalities(){
         log.log(Level.FINE, "Checking connection cardinalities");
-        StringBuilder builder = new StringBuilder();
-        diagram.getVertices().stream()
-                .filter(DataClass::isRelationship)
-                .forEach(dataClass -> {
-                    List<Connection> withoutCardinality = dataClass.getConnections().stream()
-                            .filter(connection -> !connection.isAttributeConnection())
-                            .filter(connection -> !connection.hasCardinality())
-                            .collect(Collectors.toList());
-                    withoutCardinality.forEach(connection -> builder.append(String.format("%s\n", connection.toString())));
-                });
-        if(builder.isEmpty()){
-            //defects.add(new Defect(DefectType.CARDINALITIES_PRESENT, false, "", ));
+
+        DefectType defectType = DefectType.CARDINALITIES_PRESENT;
+
+        if(!extractor.isEnabledInConfig(defectType))   return;
+
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkCardinalities(diagram, defectType, value));
         }
-        else{
-            //defects.add(new Defect(DefectType.CARDINALITIES_PRESENT, true, builder.toString(), ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error checking presence of cardinalities on connections!", ex);
         }
     }
 
@@ -523,35 +487,16 @@ public class DefectChecker {
     private void checkDuplicateNames(){
         log.log(Level.FINE, "Checking duplicate names");
 
-        List<String> uniques = diagram.getVertices().stream()
-                .filter(dataClass -> !dataClass.isAttribute())
-                .map(dataClass -> dataClass.getName().strip())
-                .distinct()
-                .collect(Collectors.toList());
+        DefectType defectType = DefectType.NO_DUPLICATE_NAMES;
 
-        long actualCount =  diagram.getVertices()
-                .stream()
-                .filter(dataClass -> !dataClass.isAttribute()).count();
+        if(!extractor.isEnabledInConfig(defectType))   return;
 
-        if(uniques.size() == actualCount){
-            //defects.add(new Defect(DefectType.NO_DUPLICATE_NAMES, false, "", ));
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkDuplicateNames(diagram, defectType, value));
         }
-        else{
-            StringBuilder builder = new StringBuilder();
-            builder.append("Duplicate names:\n");
-
-            for(String name : uniques){
-                List<DataClass> sameNames = diagram.getVertices().stream()
-                        .filter(dataClass -> !dataClass.isAttribute())
-                        .filter(dataClass -> dataClass.getName().strip().equals(name))
-                        .collect(Collectors.toList());
-
-                if(sameNames.size()>1){
-                    builder.append(String.format("\t\tName: \"%s\"\n",name));
-                }
-            }
-
-            //defects.add(new Defect(DefectType.NO_DUPLICATE_NAMES, true, builder.toString(), ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error checking duplicate names!", ex);
         }
     }
 
@@ -560,31 +505,17 @@ public class DefectChecker {
      */
     private void checkDuplicateAttributes(){
         log.log(Level.FINE, "Checking duplicate attributes");
-        StringBuilder builder = new StringBuilder();
-        diagram.getVertices()
-                .stream()
-                .filter(dataClass -> !dataClass.isAttribute())
-                .forEach(dataClass -> {
-                    long attributeCount = dataClass.getAdjacentDataClasses()
-                            .stream()
-                            .filter(DataClass::isAttribute)
-                            .count();
 
-                    long uniqueCount = dataClass.getAdjacentDataClasses()
-                            .stream()
-                            .filter(DataClass::isAttribute)
-                            .map(DataClass::getName)
-                            .distinct()
-                            .count();
-                    if(attributeCount != uniqueCount){
-                        builder.append(String.format("\n\t\t%s has multiple attributes with the same name", dataClass.getName()));
-                    }
-                });
-        if(builder.isEmpty()){
-            //defects.add(new Defect(DefectType.NO_DUPLICATE_ATTRIBUTES, false, "", ));
+        DefectType defectType = DefectType.NO_DUPLICATE_ATTRIBUTES;
+
+        if(!extractor.isEnabledInConfig(defectType))   return;
+
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkDuplicateAttributes(diagram, defectType, value));
         }
-        else{
-            //defects.add(new Defect(DefectType.NO_DUPLICATE_ATTRIBUTES, true, builder.toString(), ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error checking duplicate attributes!", ex);
         }
     }
 
@@ -593,53 +524,18 @@ public class DefectChecker {
      */
     private void checkNamedVertices(){
         log.log(Level.FINE, "Checking named vertices");
-        List<DataClass> unnamed = diagram.getVertices().stream()
-                .filter(dataClass -> dataClass.getName().matches("\s?"))
-                .collect(Collectors.toList());
-        if(unnamed.isEmpty()){
-            //defects.add(new Defect(DefectType.NAMED_VERTICES, false, "", ));
+
+        DefectType defectType = DefectType.NAMED_VERTICES;
+
+        if(!extractor.isEnabledInConfig(defectType))   return;
+
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkNamedVertices(diagram, defectType, value));
         }
-        else{
-            StringBuilder builder = new StringBuilder();
-            builder.append("Unnamed entities:\n");
-            unnamed.forEach(dataClass -> builder.append(String.format("\t\t%s\n",dataClass.toString())));
-            //defects.add(new Defect(DefectType.NAMED_VERTICES, true,
-            //        builder.toString(), ));
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Error checking named vertices!", ex);
         }
     }
 
-    /**
-     *
-     * @param entity
-     * @return true if weak Entity is identified through its composite id
-     */
-    private boolean checkWeakEntityIdentification(Entity entity){
-        List<Key> keys = entity.getKeys();
-
-        List<Attribute> simpleIds = keys.stream()
-                .filter(Key::isSimple)
-                .map(key -> (Attribute) key)
-                .collect(Collectors.toList());
-
-        if(keys.isEmpty() || !simpleIds.isEmpty()){
-            return false;
-        }
-
-        List<Composite> possibleIds = entity.getKeys()
-                .stream()
-                .map(key -> (Composite)key)
-                .filter(Composite::isRelationshipBased)
-                .collect(Collectors.toList());
-
-        for(Composite composite : possibleIds){
-            Optional<Connection> relationshipConnection = composite.getRelationshipConnection();
-            if(relationshipConnection.isPresent()){
-                boolean isId = relationshipConnection.get().isIdentifyingConnection(entity);
-                if(isId){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
