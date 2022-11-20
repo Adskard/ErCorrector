@@ -1,6 +1,5 @@
 package corrector.checker;
 
-import corrector.configuration.value.QuantityConfigValue;
 import corrector.configuration.value.UsageConfigValue;
 import corrector.defect.Defect;
 import corrector.defect.UsageDefect;
@@ -14,7 +13,6 @@ import model.Diagram;
 import model.Generalization;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 

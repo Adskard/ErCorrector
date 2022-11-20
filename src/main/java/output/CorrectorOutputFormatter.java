@@ -1,9 +1,7 @@
 package output;
 
 import corrector.AssignmentGrader;
-import corrector.defect.BasicDefect;
 import corrector.defect.Defect;
-import corrector.defect.QuantityDefect;
 import output.stringifier.DefectStringifier;
 import output.stringifier.DefectVisitor;
 
@@ -62,11 +60,13 @@ public class CorrectorOutputFormatter {
         builder.append("-".repeat(longestString.get()));
         builder.append("---------------\n");
 
-        defects.stream().forEach(defect -> builder.append(String.format("| %s%s | %f |\n",
-                defect.getType().getMessage(),
-                " ".repeat(longestString.get() - defect.getType().getMessage().length()),
-                defect.getPresent() ? 0.0f : defect.getPoints())));
-
+        for(Defect defect : defects){
+            builder.append(
+                String.format("| %s%s | %f |\n",
+                    defect.getType().getMessage(),
+                    " ".repeat(longestString.get() - defect.getType().getMessage().length()),
+                    defect.getPresent() ? 0.0f : defect.getPoints()));
+        }
         builder.append("-".repeat(longestString.get()));
         builder.append("---------------\n");
 

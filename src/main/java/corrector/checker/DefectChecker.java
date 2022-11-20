@@ -5,7 +5,6 @@ import corrector.configuration.value.ConfigValue;
 import corrector.configuration.value.NaryRelationshipConfigValue;
 import corrector.configuration.value.QuantityConfigValue;
 import corrector.configuration.value.UsageConfigValue;
-import corrector.defect.BasicDefect;
 import corrector.defect.Defect;
 import corrector.struct.CardinalityPair;
 import corrector.struct.HierarchyPair;
@@ -14,12 +13,10 @@ import enums.DefectType;
 
 import lombok.Getter;
 import lombok.extern.java.Log;
-import model.*;
 import model.Diagram;
 
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  *
@@ -227,7 +224,6 @@ public class DefectChecker {
         if(!extractor.isEnabledInConfig(defectType)) return;
 
         try{
-            QuantityConfigValue q = (QuantityConfigValue) extractor.getConfigValue(defectType);
             NaryRelationshipConfigValue value = (NaryRelationshipConfigValue) extractor.getConfigValue(defectType);
             defects.add(QuantityDefectChecker.checkNaryRelationshipCount(diagram, defectType, value));
         }

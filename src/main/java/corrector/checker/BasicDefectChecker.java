@@ -5,16 +5,10 @@ import corrector.defect.BasicDefect;
 import corrector.defect.Defect;
 import enums.Cardinality;
 import enums.DefectType;
-import lombok.Data;
 import lombok.extern.java.Log;
 import model.*;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.logging.Level;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log
@@ -97,7 +91,7 @@ public class BasicDefectChecker {
         var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
 
         List<DataClass> entitiesWithoutKeys = diagram.getEntities().stream()
-                .filter(entity -> entity.getKeys().isEmpty())
+                .filter(entity -> !entity.hasIdentifier())
                 .collect(Collectors.toList());
 
         if(!entitiesWithoutKeys.isEmpty()){
@@ -125,8 +119,18 @@ public class BasicDefectChecker {
         StringBuilder info = new StringBuilder();
 
         var resultingDefectBuilder = BasicDefect.<Entity>basicBuilder();
-        //TODO
-        List<Entity> incorrectUses = new LinkedList<>();
+
+        List<Entity> incorrectUses = diagram.getEntities().stream()
+                .filter(Entity::isWeakEntity)
+                .filter(entity -> entity.getKeys().stream()
+                            .filter(key -> !key.isSimple())
+                            .map(key -> (Composite) key)
+                            .allMatch(composite -> !composite.isWeakIdentifier()))
+                .collect(Collectors.toList());
+
+        if(!incorrectUses.isEmpty()){
+            defectPresence = true;
+        }
 
         Float points = value.getPoints();
 
@@ -137,7 +141,6 @@ public class BasicDefectChecker {
                 .incorrectObjects(incorrectUses)
                 .points(points)
                 .build();
-
     }
 
     /**

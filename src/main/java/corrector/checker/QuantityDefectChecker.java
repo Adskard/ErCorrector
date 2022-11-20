@@ -172,7 +172,13 @@ public class QuantityDefectChecker {
     public static Defect checkCompositeCount(Diagram diagram, DefectType defectType,
                                              QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actual = () ->
-                (long) diagram.getComposites().size();
+                (long) diagram.getComposites().size()
+                +
+                diagram.getAttributes().stream()
+                        .filter(Attribute::isStructured)
+                        .filter(Attribute::getIsKey)
+                        .filter(Attribute::isSimple)
+                        .count();
 
         return quantityDefectTemplate(defectType, value, actual);
     }

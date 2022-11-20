@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
-import output.stringifier.DefectStringifier;
 import output.stringifier.DefectVisitor;
 
 @Getter

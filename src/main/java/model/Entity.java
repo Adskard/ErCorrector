@@ -6,6 +6,7 @@
 package model;
 
 import lombok.Getter;
+import output.stringifier.DiagramVisitor;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -40,6 +41,23 @@ public class Entity extends DataClass{
 
     public List<Key> getKeys(){
         return new LinkedList<>(keys);
+    }
+
+    public List<Entity> getAncestors(){
+        return super.getConnections().stream()
+                .filter(Connection::isGeneralization)
+                .map(Connection::getTarget)
+                .map(dataClass -> (Entity) dataClass)
+                .filter(dataClass -> !equals(dataClass))
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasIdentifier(){
+        if(!keys.isEmpty()){
+            return true;
+        }
+
+        return getAncestors().stream().anyMatch(Entity::hasIdentifier);
     }
 
     public boolean isWeakEntity(){
@@ -93,5 +111,10 @@ public class Entity extends DataClass{
                 " isWeak = " + isWeak +
                 " keys: " +
                 Arrays.toString(keys.toArray());
+    }
+
+    @Override
+    public String accept(DiagramVisitor visitor) {
+        return visitor.visit(this);
     }
 }

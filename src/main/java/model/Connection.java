@@ -7,6 +7,7 @@ package model;
 
 import enums.Cardinality;
 import lombok.*;
+import output.stringifier.DiagramVisitor;
 
 import java.util.*;
 
@@ -18,7 +19,7 @@ import java.util.*;
  */
 @Getter
 @Setter
-public class Connection {
+public class Connection implements DiagramComponent{
     /**
      * Source DataClass
      */
@@ -72,18 +73,10 @@ public class Connection {
 
     /**
      *
-     * @param entity weak entity
      * @return true if connection identifies a weak entity
      */
-    public boolean isIdentifyingConnection(Entity entity){
-        if(!cardinality.equals(Cardinality.ONE)){
-            return false;
-        }
-        return this.getOtherParticipant(entity).getAdjacentDataClasses()
-                .stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
-                .anyMatch(connectedEntity -> !connectedEntity.getIsWeak());
+    public boolean isIdentifyingConnection(){
+        return cardinality.equals(Cardinality.ONE);
     }
 
     public boolean isFullyConnected(){
@@ -176,5 +169,10 @@ public class Connection {
                         "   cardinality: " + cardinality :
                         "") +
                 "}\n";
+    }
+
+    @Override
+    public String accept(DiagramVisitor visitor) {
+        return visitor.visit(this);
     }
 }

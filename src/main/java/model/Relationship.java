@@ -5,6 +5,8 @@
  */
 package model;
 
+import output.stringifier.DiagramVisitor;
+
 /**
  * The class Relationship is a direct mapping of attributes from
  * Entity-Relationship diagram.
@@ -35,5 +37,10 @@ public class Relationship extends DataClass{
     public String toString() {
         return "Relationship" +
                 super.toString();
+    }
+
+    @Override
+    public String accept(DiagramVisitor visitor) {
+        return visitor.visit(this);
     }
 }

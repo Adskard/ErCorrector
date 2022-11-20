@@ -14,7 +14,6 @@ import java.util.logging.Level;
 
 /**
  * The Class AssignmentGrader ...
- *
  * This class and its methods do not change given Diagram.
  *
  * @author Adam Skarda

@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public abstract class DataClass {
+public abstract class DataClass implements DiagramComponent{
     /**
      * Human readable DataClass name
      */
@@ -67,6 +68,22 @@ public abstract class DataClass {
         return new LinkedList<>(connections);
     }
 
+    public List<Attribute> getDataClassAttributes(){
+        return connections.stream()
+                .map((connection)->{
+                    if(!connection.isFullyConnected()){
+                        return null;
+                    }
+                    if(connection.isSource(this)){
+                        return connection.getTarget().isAttribute() ? (Attribute)connection.getTarget() : null;
+                    }
+                    else{
+                        return connection.getSource().isAttribute() ? (Attribute)connection.getSource() : null;
+                    }
+                })
+                .filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
     @Override
     public boolean equals(Object o){
         if(o instanceof DataClass){
@@ -81,6 +98,6 @@ public abstract class DataClass {
         return "{" +
                 "name='" + name + '\'' +
                 ", id=" + id +
-                "}\n";
+                "}";
     }
 }

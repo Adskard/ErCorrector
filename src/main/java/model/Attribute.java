@@ -7,6 +7,7 @@ package model;
 
 
 import lombok.*;
+import output.stringifier.DiagramVisitor;
 
 /**
  * The class Attribute is a direct mapping of attributes from
@@ -15,11 +16,15 @@ import lombok.*;
  */
 @Getter
 @Setter
-public class Attribute extends DataClass implements Key{
+public class Attribute extends DataClass implements Key, DiagramComponent{
     /**
      * True if this Attribute is a key, false otherwise.
      */
     private final Boolean isKey;
+
+    public boolean isStructured(){
+        return !super.getDataClassAttributes().isEmpty();
+    }
 
     @Builder
     public Attribute(String name, String id, Boolean isKey) {
@@ -32,6 +37,16 @@ public class Attribute extends DataClass implements Key{
         return "Attribute{" +
                 super.toString().substring(1,super.toString().length()-2) +
                 ", isKey=" + isKey +
-                "}\n";
+                "}";
+    }
+
+    @Override
+    public String accept(DiagramVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public boolean isSimple() {
+        return true;
     }
 }

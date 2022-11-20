@@ -129,33 +129,6 @@ public class Diagram {
 
     }
 
-    public List<Attribute> getDataClassAttributes(DataClass dataClass){
-        return getDataClassConnections(dataClass).stream()
-                .map((connection)->{
-                    if(!connection.isFullyConnected()){
-                        return null;
-                    }
-                    if(isConnectionSource(dataClass, connection)){
-                        return connection.getTarget().isAttribute() ? (Attribute)connection.getTarget() : null;
-                    }
-                    else{
-                        return connection.getSource().isAttribute() ? (Attribute)connection.getSource() : null;
-                    }
-                        })
-                .filter(Objects::nonNull).collect(Collectors.toList());
-    }
-
-    public boolean isConnectionSource(DataClass dataClass, Connection connection){
-        return connection.getSource().getId().equals(dataClass.getId());
-    }
-
-    public List<Connection> getDataClassConnections(DataClass dataClass){
-        return edges.stream()
-                .filter((edge)->edge.getTarget().getId().equals(dataClass.getId())
-                || edge.getSource().getId().equals(dataClass.getId()))
-                .collect(Collectors.toList());
-    }
-
     public Optional<DataClass> findVertexById(String id){
         return vertices.stream().filter((vert) -> vert.getId().equals(id)).findAny();
     }

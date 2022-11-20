@@ -1,6 +1,8 @@
 package model;
 
+import enums.Cardinality;
 import lombok.Getter;
+import output.stringifier.DiagramVisitor;
 
 import java.util.*;
 
@@ -9,7 +11,7 @@ import java.util.*;
  * a composite key and the associated entity.
  */
 @Getter
-public class Composite implements Key {
+public class Composite implements Key, DiagramComponent {
     /**
      * Connections and members of composite key.
      */
@@ -45,6 +47,27 @@ public class Composite implements Key {
                 .filter(Connection::isRelationshipConnection)
                 .findAny();
     }
+    public boolean isWeakIdentifier(){
+        boolean idAttribute = compositeMembers.keySet().stream()
+                .filter(Connection::isAttributeConnection)
+                .anyMatch(connection -> !connection.hasCardinality() ||
+                        connection.getCardinality().equals(Cardinality.ONE_TO_MANY) ||
+                        connection.getCardinality().equals(Cardinality.ONE));
+
+        if(!idAttribute){
+            return false;
+        }
+
+        boolean idRel = compositeMembers.keySet().stream()
+                .filter(Connection::isRelationshipConnection)
+                .anyMatch(Connection::isIdentifyingConnection);
+
+        if(!idRel){
+            return false;
+        }
+
+        return true;
+    }
 
     @Override
     public boolean equals(Object o){
@@ -59,5 +82,15 @@ public class Composite implements Key {
     public String toString(){
         return String.format("Composite Key id=%s ", id)
                 + "\n";
+    }
+
+    @Override
+    public String accept(DiagramVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public boolean isSimple() {
+        return false;
     }
 }

@@ -49,48 +49,34 @@ public class ConfigExtractor {
                     configuration.getProperty(defectType.getConfigKey(), defectType.getDefaultValue())
                         .strip()
                         .split(confValueSeparator))
-                .map(part -> part.strip())
+                .map(String::strip)
                 .collect(Collectors.toList());
 
         ConfigValue configValue;
 
         switch(defectType.getClassification()){
-            case USAGE -> {
-                configValue = getUsageValue(defectType, values);
-            }
-            case QUANTITY -> {
-                configValue = getQuantityValue(defectType, values);
-            }
+            case USAGE -> configValue = getUsageValue(defectType, values);
 
-            case BASIC ->{
-                configValue = getBasicValue(defectType, values);
-            }
+            case QUANTITY -> configValue = getQuantityValue(values);
 
-            case NARY_RELATIONSHIP -> {
-                configValue = new NaryRelationshipConfigValue(Float.parseFloat(values.get(values.size()-1)),
+            case BASIC -> configValue = getBasicValue(values);
+
+            case NARY_RELATIONSHIP ->
+                    configValue = new NaryRelationshipConfigValue(Float.parseFloat(values.get(values.size()-1)),
                         Integer.parseInt(values.get(0)), Integer.parseInt(values.get(1)),
                         Integer.parseInt(values.get(2)));
-            }
 
-            default -> {
-                configValue = new ConfigValue(0.0f);
-            }
+            default -> configValue = new ConfigValue(0.0f);
         }
 
         return configValue;
     }
 
-    private ConfigValue getBasicValue(DefectType defectType, List<String> values){
-        ConfigValue value;
-        switch (defectType){
-            default -> {
-                value = new ConfigValue(Float.parseFloat(values.get(0)));
-            }
-        }
-        return value;
+    private ConfigValue getBasicValue(List<String> values){
+        return new ConfigValue(Float.parseFloat(values.get(0)));
     }
 
-    private ConfigValue getQuantityValue(DefectType defectType, List<String> values){
+    private ConfigValue getQuantityValue(List<String> values){
         return new QuantityConfigValue(Float.parseFloat(values.get(values.size()-1)),
                 Integer.parseInt(values.get(0)), Integer.parseInt(values.get(1)));
     }
@@ -99,22 +85,19 @@ public class ConfigExtractor {
         ConfigValue value;
         float points = Float.parseFloat(values.get(values.size()-1));
         switch (defectType){
-            case CARDINALITY_TYPE_USAGE, MULTIVALUED_ATTRIBUTE_CARDINALITY_USAGE -> {
-                value = new UsageConfigValue<Cardinality>(points,
-                        getCardinalitiesFromValues(values.subList(0, values.size()-1)));
-            }
-            case CARDINALITY_PAIR_USAGE -> {
-                value = new UsageConfigValue<CardinalityPair>(points,
-                        getCardinalityPairsFromValues(values.subList(0, values.size()-1)));
-            }
-            case HIERARCHY_USAGE -> {
-                value = new UsageConfigValue<HierarchyPair>(points,
-                        getHierarchyPairsFromValues(values.subList(0, values.size()-1)));
-            }
-            default -> {
-                throw new ConfigurationException(
-                        String.format("Defect type: %s not implemented as UsageType defect",defectType));
-            }
+            case CARDINALITY_TYPE_USAGE, MULTIVALUED_ATTRIBUTE_CARDINALITY_USAGE ->
+                    value = new UsageConfigValue<>(points,
+                            getCardinalitiesFromValues(values.subList(0, values.size() - 1)));
+
+            case CARDINALITY_PAIR_USAGE ->
+                    value = new UsageConfigValue<>(points,
+                            getCardinalityPairsFromValues(values.subList(0, values.size() - 1)));
+
+            case HIERARCHY_USAGE -> value = new UsageConfigValue<>(points,
+                    getHierarchyPairsFromValues(values.subList(0, values.size() - 1)));
+
+            default -> throw new ConfigurationException(
+                    String.format("Defect type: %s not implemented as UsageType defect",defectType));
         }
         return value;
     }
@@ -163,7 +146,7 @@ public class ConfigExtractor {
             Disjointness disjointness = Disjointness.decideDisjointness(pair[1]);
 
             if(coverage.equals(Coverage.NOT_RECOGNIZED) || disjointness.equals(Disjointness.NOT_RECOGNIZED)) {
-                throw new ConfigurationException(String.format("Hierarchy type not recognized", val));
+                throw new ConfigurationException(String.format("Hierarchy type not recognized %s", val));
             }
 
             pairs.add(new HierarchyPair(coverage, disjointness));
@@ -179,7 +162,7 @@ public class ConfigExtractor {
      * @return types of cardinalities present
      * @throws ConfigurationException if values contain not recognized cardinality
      */
-    public List<Cardinality> getCardinalitiesFromValues(List<String> values) throws ConfigurationException{
+    private List<Cardinality> getCardinalitiesFromValues(List<String> values) throws ConfigurationException{
         List<Cardinality> cardinalities = new LinkedList<>();
 
         if(values.get(0).equalsIgnoreCase(confCardinalityAll)){

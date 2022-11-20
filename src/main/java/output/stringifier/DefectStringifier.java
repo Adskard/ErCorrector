@@ -10,13 +10,16 @@ public class DefectStringifier implements DefectVisitor{
     public String visit(BasicDefect basicDefect) {
         StringBuilder builder = new StringBuilder();
 
-        builder.append(basicDefect.getType().getMessage() + "\n");
+        builder.append(String.format("%s\n", basicDefect.getType().getMessage()));
         
         builder.append(String.format("\tAwarded %f points out of %f\n",
                 basicDefect.getPresent() ? 0.0f : basicDefect.getPoints(),
                 basicDefect.getPoints()));
 
-        builder.append(String.format("\tIncorrect usages: %s\n", basicDefect.getIncorrectObjects()));
+        if(!basicDefect.getIncorrectObjects().isEmpty()){
+            builder.append(String.format("\tIncorrect usages: %s\n", basicDefect.getIncorrectObjects()));
+        }
+
 
         if(!basicDefect.getAdditionalInfo().isEmpty()){
             builder.append(String.format("\tAdditional information: \n\t\t%s\n",
@@ -28,7 +31,7 @@ public class DefectStringifier implements DefectVisitor{
     @Override
     public String visit(UsageDefect usageDefect) {
         StringBuilder builder = new StringBuilder();
-        builder.append(usageDefect.getType().getMessage() + "\n");
+        builder.append(String.format("%s\n", usageDefect.getType().getMessage()));
 
         builder.append(String.format("\tAwarded %f points out of %f\n",
                 usageDefect.getPresent() ? 0.0f : usageDefect.getPoints(),
@@ -50,7 +53,7 @@ public class DefectStringifier implements DefectVisitor{
     @Override
     public String visit(QuantityDefect quantityDefect) {
         StringBuilder builder = new StringBuilder();
-        builder.append(quantityDefect.getType().getMessage() + "\n");
+        builder.append(String.format("%s\n", quantityDefect.getType().getMessage()));
 
         builder.append(String.format("\tAwarded %f points out of %f\n",
                 quantityDefect.getPresent() ? 0.0f : quantityDefect.getPoints(),
@@ -71,7 +74,7 @@ public class DefectStringifier implements DefectVisitor{
     @Override
     public String visit(Defect defect) {
         StringBuilder builder = new StringBuilder();
-        builder.append(defect.getType().getMessage() + "\n");
+        builder.append(String.format("%s\n", defect.getType().getMessage()));
         builder.append(String.format("\tAwarded %f points out of %f\n",
                 defect.getPresent() ? 0.0f : defect.getPoints(),
                 defect.getPoints()));
@@ -81,4 +84,5 @@ public class DefectStringifier implements DefectVisitor{
         }
         return builder.toString();
     }
+
 }
