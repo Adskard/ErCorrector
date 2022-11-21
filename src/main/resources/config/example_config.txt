@@ -1,7 +1,7 @@
 #README!
-#This is a configuration file for adjusting output of ErCorrector.
+#This is a configuration file for adjusting cz.cvut.fel.corrector.output of ErCorrector.
 #Configuration is read using java.util.properties, viz https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html
-#Every line consists of key - value pair. Keys are defined in ErCorrector.enums.DefectType
+#Every line consists of key - value pair. Keys are defined in ErCorrector.enums.cz.cvut.fel.DefectType
 #Structure of value is dependent on key. Some keys need several values to function.
 #Such as entity_count where a value consists of min : int, max : int, points : float.
 #Value structure is described in a comment directly above the key-value pair.
