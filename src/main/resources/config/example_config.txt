@@ -1,0 +1,106 @@
+#README!
+#This is a configuration file for adjusting cz.cvut.fel.corrector.output of ErCorrector.
+#Configuration is read using java.util.properties, viz https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html
+#Every line consists of key - value pair. Keys are defined in ErCorrector.enums.cz.cvut.fel.DefectType
+#Structure of value is dependent on key. Some keys need several values to function.
+#Such as entity_count where a value consists of min : int, max : int, points : float.
+#Value structure is described in a comment directly above the key-value pair.
+#To disable correcting of certain defects set their value to "disable"
+#i.e. to disable counting of attributes present in diagram - "attribute_ordinary = disable".
+#Blank values such as "attribute_ordinary =     " are counted as being disabled.
+#Missing configuration keys are enabled and counted as having default values.
+#List of keys for basic defects - (can be only disabled or enabled)
+#     - named_vertices
+#     - no_duplicate_names
+#List of usable keys, their default value and value structure:
+#     - named_vertices
+#     - no_duplicate_names
+#     -
+
+
+#number of multivalued attributes
+
+#minimal_count : int, maximal_count : int,  points_if_correct : float
+attribute_multival = 5, 5, 1.0
+
+#types of cardinalities used on multivalued attributes
+#all or list of required cardinalities separated by comma
+#e.g. "0..N, 0..1, 1..N" is same as all
+attribute_multival_cardinality = all, 1.0
+
+#number of structured attributes
+#minimal_count : int, maximal_count : int, points_if_correct : float
+attribute_structured = 1, 1, 1.0
+
+#number of ordinary attributes
+#minimal_count : int, maximal_count : int, points_if_correct : float
+attribute_ordinary = disable
+
+
+
+#Types of cardinalities used
+#"all, points : float" or list of required cardinalities separated by a comma
+#e.g. "0..N, 1..1, 0..1, 1..N, points : float" is same as "all,  points : float"
+cardinality_types = all, 3.0
+
+#Pairs of cardinalities used
+#"all" or list of required non repeating cardinality pairings (e.g. 0..N-1..1) separated by a comma
+#e.g. "0..N-0..N, 0..N-1..1, 0..N-0..1, 0..N-1..N, 1..1-1..1, 1..1-0..1, 1..1-1..N, 0..1-0..1, 0..1-1..N, 1..N-1..N,
+#points : float" is the same as "all,  points : float"
+cardinality_pairs = all, 3.023123
+
+#Number of recursive relationships
+#minimal_count : int, maximal_count : int, points_if_correct : float
+recursion = 17,20,1.000000000000000000000000000000000000
+
+#Number of entity connections on a relationship, minimal number of such relationships
+n_ary_relationship = 2, 5, 3,1.00
+
+
+
+#number of weak entities
+weak_entity_count = 15, 20, 0.4
+
+#Multiple identifiers on a single entity
+several_identifiers = 2, 2, 1.00
+
+#Number of composite identifiers
+composite_id = 1233333, 111111111, 1.0
+
+
+#Hierarchy used
+hierarchy = 1, 5, 0.1
+
+#number of entities in a diagram
+#minimal_count : int, maximal_count : int, points_if_correct : float
+#entity_count = 15, 13, 2.5
+
+#number of relationships in a diagram
+#minimal_count : int, maximal_count : int, points_if_correct : float
+relationship_count = 2, 5, 1.1
+
+################################# Basic defects ###########################################
+
+#Veritice (attribute, entity, relationship) have names
+named_vertices = 1.0
+
+#No duplicate names on entities and relationships
+no_duplicate_names = 1.0
+
+#No duplicate names on attributes on one vertex
+no_duplicate_attributes = 1.0
+
+#Every non-weak entity has an identifier
+entity_identified = 1.0
+
+#Every weak entity is identifiable
+weak_entity_identified = 1.0
+
+#Illegal multivalued attributes i.e. 1..1 cardinality
+illegal_multival_attributes = 1.0
+
+#Cardinalities are present, where they should
+presence_of_cardinalities = 1.0
+
+#Diagram consists of a singular component
+component = 1.0

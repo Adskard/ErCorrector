@@ -1,0 +1,14 @@
+###################### CONFIGURATION #################################
+Configuration is read using java.util.properties, viz https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html
+Every line consists of key - value pair. Keys are defined in ErCorrector.enums.DefectType
+Structure of value is dependent on key. Some keys need several values to function.
+Such as entity_count where a value consists of min : int, max : int, points : float, terminal : boolean.
+Value structure is described in a comment directly above the key-value pair.
+To disable correcting of certain defects set their value to "disable"
+i.e. to disable counting of attributes present in diagram - "attribute_ordinary = disable".
+Blank values such as "attribute_ordinary =     " are counted as being disabled.
+Missing configuration keys are enabled and counted as having default values.
+List of usable keys, their default value and value structure:
+    - sdfjslkfsjf
+    - sdfljsdf
+    -
