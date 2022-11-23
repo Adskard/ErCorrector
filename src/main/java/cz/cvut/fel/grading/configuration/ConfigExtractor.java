@@ -12,6 +12,13 @@ import cz.cvut.fel.exception.ConfigurationException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class ConfigExtractor is used for extracting ConfigValues
+ * from configuration Properties.
+ *
+ * @author Adam Skarda
+ * @see ConfigValue
+ */
 public class ConfigExtractor {
     private final Properties configuration;
 
@@ -20,12 +27,17 @@ public class ConfigExtractor {
     private final String confCardinalityAll = "all";
     private final String confPairSeparator = "-";
 
+    /**
+     * Basic constructor
+     * @param configuration Properties object containing defect configuration
+     */
     public ConfigExtractor(Properties configuration) {
         this.configuration = configuration;
     }
 
     /**
-     * Checks if given configuration key is enabled or disabled
+     * Checks if given configuration key is enabled.
+     *
      * @param defectType Defect to be checked if its enabled
      * @return True if key is not present, or its value is not equal to disable string
      */
@@ -41,7 +53,14 @@ public class ConfigExtractor {
                 !configuration.getProperty(key).strip().equalsIgnoreCase(confKeyDisableString);
     }
 
-    public ConfigValue getConfigValue(DefectType defectType) throws RuntimeException{
+    /**
+     * Extracts a ConfigValue for a given defectType.
+     * ConfigValue is extracted from Properties.
+     *
+     * @param defectType Type of defect for which we want configuration values
+     * @return configuration value for Defect configuration
+     */
+    public ConfigValue getConfigValue(DefectType defectType){
         List<String> values = Arrays.stream(
                     configuration.getProperty(defectType.getConfigKey(), defectType.getDefaultValue())
                         .strip()
@@ -77,15 +96,33 @@ public class ConfigExtractor {
         return configValue;
     }
 
+    /**
+     * Extracts configuration values for basic type defects.
+     * @param values Values to be parsed into ConfigValue
+     * @return configuration values for basic type defects
+     * @see cz.cvut.fel.enums.ConfigValueType
+     */
     private ConfigValue getBasicValue(List<String> values){
         return new ConfigValue(Float.parseFloat(values.get(0)));
     }
 
+    /**
+     * Extracts configuration values for quantity type defects.
+     * @param values Values to be parsed into QuantityConfigValue
+     * @return configuration values for quantity type defects
+     * @see cz.cvut.fel.enums.ConfigValueType
+     */
     private ConfigValue getQuantityValue(List<String> values){
         return new QuantityConfigValue(Float.parseFloat(values.get(values.size()-1)),
                 Integer.parseInt(values.get(0)), Integer.parseInt(values.get(1)));
     }
 
+    /**
+     * Extracts configuration values for usage type defects.
+     * @param values Values to be parsed into configuration values
+     * @return configuration values for usage type defects
+     * @see cz.cvut.fel.enums.ConfigValueType
+     */
     private ConfigValue getUsageValue(DefectType defectType, List<String> values) throws ConfigurationException{
         ConfigValue value;
         float points = Float.parseFloat(values.get(values.size()-1));
@@ -111,6 +148,17 @@ public class ConfigExtractor {
         return value;
     }
 
+    /**
+     * Extracts cardinality pairs from list of strings.
+     * Values should contain either token for extracting
+     * full pair enumeration at first position. Or an enumeration of
+     * Cardinality pairs.
+     *
+     * @param values configuration CardinalityPair enumeration to be parsed
+     * @return Cardinality pairs set by configuration
+     * @throws ConfigurationException if a parsed Cardinality is not recognized
+     * @see CardinalityPair
+     */
     private List<CardinalityPair> getCardinalityPairsFromValues(List<String> values) throws ConfigurationException{
         List<Cardinality> cardinalities = new LinkedList<>();
             cardinalities.add(Cardinality.ZERO_TO_ONE);
@@ -139,6 +187,17 @@ public class ConfigExtractor {
         return pairs;
     }
 
+    /**
+     * Parses HierarchyPairs from given string values.
+     * Values should contain either token for extracting
+     * full pair enumeration at first position. Or an enumeration of
+     * HierarchyPairs.
+     *
+     * @param values configuration HierarchyPair enumeration to be parsed
+     * @return enumeration of HierarchyPairs set by configuration
+     * @throws ConfigurationException if Hierarchy coverage or disjointness is not recognized
+     * @see HierarchyPair
+     */
     private List<HierarchyPair> getHierarchyPairsFromValues(List<String> values) throws ConfigurationException{
         List<HierarchyPair> pairs = new LinkedList<>();
         if(values.get(0).equalsIgnoreCase(confCardinalityAll)){

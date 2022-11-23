@@ -16,6 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
 
+/**
+ * CommandLineRunner is a starter class for the project and serves as a CLI.
+ * @author Adam Skarda
+ */
 @Log
 public class CommandLineRunner {
 
@@ -37,19 +41,27 @@ public class CommandLineRunner {
             CommandLine cmd = parser.parse(options, args);
             InputStream xmlFile = new FileInputStream(cmd.getOptionValue(diagramFile));
             XMLValidator xml = new XMLValidator(xmlFile);
-            Diagram diagram = xml.extractDiagram();
 
-            //TODO delete debug print
+            //Parses a diagram out of the xml file
+            Diagram diagram = xml.extractDiagram();
             System.out.println(DiagramOutputFormatter.stringifyDiagram(diagram));
 
-            //Assignment 1
+            //Loads user configuration
             ConfigLoader loader = new ConfigLoader();
             loader.load(cmd.getOptionValue(config));
+
+            //Grades the diagram
             AssignmentGrader grader = new AssignmentGrader(loader.getProperties(), diagram);
             grader.grade();
-
-            //TODO delete debug print
             System.out.println(CorrectorOutputFormatter.stringifyGrading(grader));
+
+            //Creates relational schema from diagram
+
+            //Loads user relational schema
+
+            //Grades relational schema
+
+
         }
         catch(ParseException | IOException | SAXException | ParserConfigurationException ex){
             log.log(Level.SEVERE, "Failed to start", ex);

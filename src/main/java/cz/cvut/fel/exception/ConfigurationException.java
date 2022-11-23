@@ -1,5 +1,9 @@
 package cz.cvut.fel.exception;
 
+/**
+ * Exception encountered during Configuration parsing
+ * @see cz.cvut.fel.grading.configuration.ConfigExtractor
+ */
 public class ConfigurationException extends RuntimeException{
     public ConfigurationException() {
         super();

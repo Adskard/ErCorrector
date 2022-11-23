@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Adam Skarda
  */
 @Getter
-public class Entity extends DataClass{
+public class Entity extends Vertex {
 
     /**
      * True if this Entity is weak, meaning it does not its own key
@@ -43,15 +43,25 @@ public class Entity extends DataClass{
         return new LinkedList<>(keys);
     }
 
+    /**
+     * For finding out ancestors in hierarchy of this Entity.
+     * By going through generalization connection that source from
+     * this Entity and have target that is also an Entity.
+     * @return List of ancestor entities
+     */
     public List<Entity> getAncestors(){
-        return super.getConnections().stream()
-                .filter(Connection::isGeneralization)
-                .map(Connection::getTarget)
-                .map(dataClass -> (Entity) dataClass)
-                .filter(dataClass -> !equals(dataClass))
+        return super.getEdges().stream()
+                .filter(Edge::isGeneralization)
+                .map(Edge::getTarget)
+                .map(vertex -> (Entity) vertex)
+                .filter(vertex -> !equals(vertex))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Finds out if this entity is identified by its key or ancestor key.
+     * @return true if entity is identified
+     */
     public boolean hasIdentifier(){
         if(!keys.isEmpty()){
             return true;
@@ -60,6 +70,13 @@ public class Entity extends DataClass{
         return getAncestors().stream().anyMatch(Entity::hasIdentifier);
     }
 
+    /**
+     * Finds out if this entity is weak.
+     * Weak entities do not have attributes as keys
+     * and have relationship based composite key.
+     *
+     * @return true if this is weak entity
+     */
     public boolean isWeakEntity(){
 
         boolean hasRelationshipComposite = false;
@@ -87,9 +104,9 @@ public class Entity extends DataClass{
         }
 
         //ancestor keys
-        List<Entity> ancestors = this.getAdjacentDataClasses().stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
+        List<Entity> ancestors = this.getAdjacentVertices().stream()
+                .filter(Vertex::isEntity)
+                .map(vertex -> (Entity) vertex)
                 .collect(Collectors.toList());
 
         for(Entity ancestor : ancestors){

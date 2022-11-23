@@ -1,5 +1,8 @@
 package cz.cvut.fel.exception;
 
+/**
+ * Exception encountered during xml file reading
+ */
 public class CorruptedXmlException extends RuntimeException{
     public CorruptedXmlException() {
     }

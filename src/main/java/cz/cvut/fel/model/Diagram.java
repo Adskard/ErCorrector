@@ -12,12 +12,12 @@ public class Diagram {
     /**
      * Diagram Entities, Relationships, Attributes
      */
-    private final List<DataClass> vertices = new LinkedList<>();
+    private final List<Vertex> vertices = new LinkedList<>();
 
     /**
-     * Diagram Connections of associated vertices
+     * Diagram edges between vertices
      */
-    private final List<Connection> edges = new LinkedList<>();
+    private final List<Edge> edges = new LinkedList<>();
 
     /**
      * Diagram composite identifiers of entities
@@ -28,38 +28,53 @@ public class Diagram {
     }
 
     /**
-     * Organizes diagram connections for standardization purposes.
+     * Organizes diagram edges for standardization purposes.
      * Organizing a connection means switching target and source of connection where appropriate.
-     * Every entity is a target of attribute connection and target of relationship connection.
-     * Relationship is target of attribute connection and source of relationship connection.
-     * Attribute is always a source of a connection.
+     * Every entity is a target of attribute Edge and target of relationship Edge.
+     * Relationship is target of attribute Edge and source of relationship Edge.
+     * Attribute is always a source of an Edge.
      */
-    public void organizeConnections(){
-        edges.forEach(Connection::organize);
+    public void organizeEdges(){
+        edges.forEach(Edge::organize);
     }
 
+    /**
+     * Gets entities present in diagram
+     * @return list of all present entities
+     */
     public List<Entity> getEntities(){
         return vertices.stream()
-                .filter(DataClass::isEntity)
-                .map(dataClass -> (Entity) dataClass)
+                .filter(Vertex::isEntity)
+                .map(vertex -> (Entity) vertex)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Gets attributes present in diagram
+     * @return list of all present attributes
+     */
     public List<Attribute> getAttributes(){
         return vertices.stream()
-                .filter(DataClass::isAttribute)
-                .map(dataClass -> (Attribute) dataClass)
+                .filter(Vertex::isAttribute)
+                .map(vertex -> (Attribute) vertex)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Gets relationships present in diagram
+     * @return list of all present relationships
+     */
     public List<Relationship> getRelationships(){
         return vertices.stream()
-                .filter(DataClass::isRelationship)
-                .map(dataClass -> (Relationship) dataClass)
+                .filter(Vertex::isRelationship)
+                .map(vertex -> (Relationship) vertex)
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * For marking weak entities.
+     * Goes through every entity and calls their weak entity method
+     */
     public void identifyWeakEntities(){
         List<Entity> entities = this.getEntities();
 
@@ -77,18 +92,18 @@ public class Diagram {
      *
      * @return list of vertices not in main component
      */
-    public List<DataClass> getMissingVerticesFromMainComponent(){
-        List<DataClass> visited = new LinkedList<>();
-        Stack<DataClass> toBeVisited = new Stack<>();
-        DataClass first = vertices.get(0);
+    public List<Vertex> getMissingVerticesFromMainComponent(){
+        List<Vertex> visited = new LinkedList<>();
+        Stack<Vertex> toBeVisited = new Stack<>();
+        Vertex first = vertices.get(0);
         toBeVisited.push(first);
 
         //DFS
         while(!toBeVisited.isEmpty()){
-            DataClass vertex = toBeVisited.pop();
+            Vertex vertex = toBeVisited.pop();
             visited.add(vertex);
 
-            for(DataClass adjacent : vertex.getAdjacentDataClasses()){
+            for(Vertex adjacent : vertex.getAdjacentVertices()){
                 if(!visited.contains(adjacent) && !toBeVisited.contains(adjacent)){
                     toBeVisited.push(adjacent);
                 }
@@ -96,23 +111,27 @@ public class Diagram {
         }
 
         return vertices.stream()
-                .filter(dataClass -> !visited.contains(dataClass))
+                .filter(vertex -> !visited.contains(vertex))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * For connecting keys to entities.
+     * Goes through all entities and gives them associated keys
+     */
     public void addKeysToEntities(){
 
         List<Entity> entities = vertices.stream()
-                .filter(DataClass::isEntity)
+                .filter(Vertex::isEntity)
                 .map((vert)->(Entity) vert)
                 .collect(Collectors.toList());
 
         for(Entity entity : entities){
             //add simple keys
-            entity.getConnections().forEach((connection)->{
-                if(connection.isAttributeConnection()){
-                    Attribute attribute = (Attribute)  (connection.getTarget().equals(entity) ?
-                            connection.getSource(): connection.getTarget());
+            entity.getEdges().forEach((edge)->{
+                if(edge.isAttributeConnection()){
+                    Attribute attribute = (Attribute)  (edge.getTarget().equals(entity) ?
+                            edge.getSource(): edge.getTarget());
                     if(attribute.getIsKey()){
                         entity.addKey(attribute);
                     }
@@ -129,38 +148,77 @@ public class Diagram {
 
     }
 
-    public Optional<DataClass> findVertexById(String id){
+    /**
+     * Finds a vertex by its id
+     * @param id unique identifier
+     * @return optional of vertex with given id
+     */
+    public Optional<Vertex> findVertexById(String id){
         return vertices.stream().filter((vert) -> vert.getId().equals(id)).findAny();
     }
 
-    public Optional<Connection> findEdgeById(String id){
+    /**
+     * Finds an edge by its id
+     * @param id unique identifier
+     * @return optional of edge with given id
+     */
+    public Optional<Edge> findEdgeById(String id){
         return edges.stream().filter((edge) -> edge.getId().equals(id)).findAny();
     }
 
+    /**
+     * Finds a composite by its id
+     * @param id unique identifier
+     * @return optional of composite with given id
+     */
     public Optional<Composite> findCompositeById(String id){
         return composites.stream().filter((edge) -> edge.getId().equals(id)).findAny();
     }
 
+    /**
+     * Adds a composite key into the diagram
+     * @param composite Composite key with unique id
+     */
     public void addComposite(Composite composite){
         composites.add(composite);
     }
 
-    public void addVertex(DataClass vert){
+    /**
+     * Adds a vertex into the diagram
+     * @param vert Vertex with unique id
+     */
+    public void addVertex(Vertex vert){
         vertices.add(vert);
     }
 
-    public void addEdge(Connection edge){
+    /**
+     * Adds an edge into the diagram
+     * @param edge edge with unique id
+     */
+    public void addEdge(Edge edge){
         edges.add(edge);
     }
 
-    public List<DataClass> getVertices() {
+    /**
+     * Vertex getter
+     * @return Copied list of vertices
+     */
+    public List<Vertex> getVertices() {
         return new LinkedList<>(vertices);
     }
 
-    public List<Connection> getEdges() {
+    /**
+     * Edge getter
+     * @return Copied list of edges
+     */
+    public List<Edge> getEdges() {
         return new LinkedList<>(edges);
     }
 
+    /**
+     * Composite getter
+     * @return Copied list of composites
+     */
     public List<Composite> getComposites() {
         return new LinkedList<>(composites);
     }

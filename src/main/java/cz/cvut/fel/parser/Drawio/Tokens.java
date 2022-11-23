@@ -27,7 +27,7 @@ public enum Tokens {
 
     WEAK_ENTITY(".*double=[1-9].*"),
 
-    CONNECTION(".*endArrow=none.*"),
+    EDGE(".*endArrow=none.*"),
     GENERALIZATION(""),
     CARDINALITY("parent");
 

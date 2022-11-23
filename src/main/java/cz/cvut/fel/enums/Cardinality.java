@@ -2,8 +2,9 @@ package cz.cvut.fel.enums;
 
 import lombok.Getter;
 /**
+ * Edge cardinality
+ *
  * @author Adam Skarda
- * Connection cardinality
  */
 @Getter
 public enum Cardinality {

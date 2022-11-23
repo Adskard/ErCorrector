@@ -59,6 +59,8 @@ public class XMLValidator {
         }
         else throw new IOException("Unsupported XML format");
 
+
+        file.close();
         return parser.parse(doc);
     }
 }

@@ -12,21 +12,26 @@ import cz.cvut.fel.output.stringifier.DiagramVisitor;
  * Entity-Relationship diagram.
  * @author Adam Skarda
  */
-public class Relationship extends DataClass{
+public class Relationship extends Vertex {
 
     public Relationship(String name, String id) {
         super(name, id);
     }
 
+    /**
+     * For finding out if this relationship is recursive.
+     * Recursive relationship has two relationship edges to the same entity.
+     * @return true if this is recursive relationship
+     */
     public boolean isRecursive(){
-        long all = super.getConnections().stream()
-                .map(connection -> connection.getOtherParticipant(this))
-                .filter(DataClass::isEntity)
+        long all = super.getEdges().stream()
+                .map(edge -> edge.getOtherParticipant(this))
+                .filter(Vertex::isEntity)
                 .count();
 
-        long distinct = super.getConnections().stream()
-                .map(connection -> connection.getOtherParticipant(this))
-                .filter(DataClass::isEntity)
+        long distinct = super.getEdges().stream()
+                .map(edge -> edge.getOtherParticipant(this))
+                .filter(Vertex::isEntity)
                 .distinct()
                 .count();
 

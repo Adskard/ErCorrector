@@ -10,9 +10,22 @@ import cz.cvut.fel.model.*;
 
 import java.util.function.Supplier;
 
-
+/**
+ * Class QuantityDefectChecker is aggregation of static methods
+ * that perform checks on a Diagram,
+ * which produce QuantityDefects as a result.
+ * @author Adam Skarda
+ */
 public class QuantityDefectChecker {
 
+    /**
+     * Template method for duplicate code reduction.
+     * @param defectType type of defect checked
+     * @param value configuration value for checks
+     * @param actualCountSupplier Function that supplies the actual number of occurrences
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     private static Defect quantityDefectTemplate(
             DefectType defectType, QuantityConfigValue value, Supplier<Long> actualCountSupplier)
             throws ConfigurationException{
@@ -50,28 +63,52 @@ public class QuantityDefectChecker {
                 .build();
     }
 
+    /**
+     * Counts the number of multivalued attribute occurrences.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkMultivaluedAttributeCount(Diagram diagram, DefectType defectType,
                                                         QuantityConfigValue value) throws ConfigurationException{
 
         Supplier<Long> actualCount = () -> diagram.getEdges()
                 .stream()
-                .filter(Connection::isAttributeConnection)
-                .filter(Connection::hasCardinality)
+                .filter(Edge::isAttributeConnection)
+                .filter(Edge::hasCardinality)
                 .count();
 
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of entities in a given diagram.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkEntityCount(Diagram diagram, DefectType defectType,
                                                 QuantityConfigValue value) throws ConfigurationException{
 
         Supplier<Long> actualCount = ()-> diagram.getVertices().stream()
-                    .filter(DataClass::isEntity)
+                    .filter(Vertex::isEntity)
                     .count();
 
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of relationships in a given diagram.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkRelationshipCount(Diagram diagram, DefectType defectType,
                                                 QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> (long) diagram.getRelationships().size();
@@ -79,6 +116,14 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of recursive relationship in a given diagram.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkRecursiveRelationshipCount(Diagram diagram, DefectType defectType,
                                                          QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> diagram.getRelationships().stream()
@@ -88,19 +133,35 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of structured attributes in a diagram
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkStructuredAttributeCount(Diagram diagram, DefectType defectType,
                                                        QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> diagram.getAttributes().stream()
                 .filter(attribute ->
-                        attribute.getAdjacentDataClasses().stream()
-                                .anyMatch(dataClass -> dataClass.isEntity() || dataClass.isRelationship()))
-                .filter(attribute -> attribute.getAdjacentDataClasses().stream()
-                        .anyMatch(DataClass::isAttribute))
+                        attribute.getAdjacentVertices().stream()
+                                .anyMatch(vertex -> vertex.isEntity() || vertex.isRelationship()))
+                .filter(attribute -> attribute.getAdjacentVertices().stream()
+                        .anyMatch(Vertex::isAttribute))
                 .count();
 
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of attributes in a given diagram.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkAttributeCount(Diagram diagram, DefectType defectType,
                                              QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> (long) diagram.getAttributes().size();
@@ -108,6 +169,15 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of N-ary relationships in a given diagram.
+     * N-arity of a relationship is given by configuration.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkWeakEntityCount(Diagram diagram, DefectType defectType,
                                               QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actual = () ->
@@ -118,6 +188,14 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actual);
     }
 
+    /**
+     *
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkNaryRelationshipCount(Diagram diagram, DefectType defectType,
                                                     NaryRelationshipConfigValue value) throws ConfigurationException{
 
@@ -134,14 +212,14 @@ public class QuantityDefectChecker {
         }
 
         long actualCount = diagram.getRelationships().stream()
-                .filter(relationship -> value.getConnections() <= relationship.getAdjacentDataClasses()
-                        .stream()
-                        .filter(DataClass::isEntity)
-                        .distinct().count())
+                .filter(relationship ->
+                        value.getEdges() <= relationship.getAdjacentVertices().stream()
+                            .filter(Vertex::isEntity)
+                            .distinct().count())
                 .count();
 
         if(actualCount < expectedMin || actualCount > expectedMax){
-            info.append(String.format("Counting relationships with at least %s connections.", value.getConnections()));
+            info.append(String.format("Counting relationships with at least %s edges.", value.getEdges()));
             info.append(String.format(" Expected %s  <%s, %s> was %s", defectType.getMessage(),
                     expectedMin, expectedMax, actualCount));
             defectPresence = true;
@@ -161,6 +239,14 @@ public class QuantityDefectChecker {
                 .build();
     }
 
+    /**
+     * Counts the number of entities with multiple identifiers.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkMultipleIdentificationsCount(Diagram diagram, DefectType defectType,
                                                            QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> diagram.getEntities().stream()
@@ -170,6 +256,14 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actualCount);
     }
 
+    /**
+     * Counts the number of composite keys in a given diagram.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkCompositeCount(Diagram diagram, DefectType defectType,
                                              QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actual = () ->
@@ -184,11 +278,20 @@ public class QuantityDefectChecker {
         return quantityDefectTemplate(defectType, value, actual);
     }
 
+    /**
+     * Counts the number of Hierarchies in a given diagram.
+     * More specifically counts the number of ancestors.
+     * @param diagram Diagram to be checked for occurrences
+     * @param defectType Type of defect checked
+     * @param value configuration value for this check
+     * @return QuantityDefect describing the expected and actual number of occurrences
+     * @throws ConfigurationException if QuantityConfigValue contains invalid minimum and maximum number of occurrences
+     */
     public static Defect checkHierarchyCount(Diagram diagram, DefectType defectType,
                                              QuantityConfigValue value) throws ConfigurationException{
         Supplier<Long> actualCount = () -> diagram.getEdges().stream()
-                .filter(Connection::isGeneralization)
-                .map(Connection::getTarget)
+                .filter(Edge::isGeneralization)
+                .map(Edge::getTarget)
                 .distinct()
                 .count();
 

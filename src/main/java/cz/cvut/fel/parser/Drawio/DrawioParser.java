@@ -44,7 +44,7 @@ public class DrawioParser implements Parser {
     /**
      * Extracts given document elements into corresponding Diagram components.
      * Goes through document elements separating them into edges and vertices then parses
-     * such elements as Connections and DataClasses.
+     * such elements as Edges and Vertices.
      *
      * @param doc document of edge and vertex elements
      * @return Diagram of parsed document elements
@@ -91,9 +91,9 @@ public class DrawioParser implements Parser {
 
 
     /**
-     * Adds DataClasses parsed from given Elements to the given Diagram object.
-     * Goes through the given list and creates appropriate DataClasses by parsing the element information.
-     * Corresponding DataClasses are by style attribute matching.
+     * Adds Vertices parsed from given Elements to the given Diagram object.
+     * Goes through the given list and creates appropriate Vertices by parsing the element information.
+     * Corresponding Vertices are by style attribute matching.
      *
      * @see Diagram
      * @see Element
@@ -129,8 +129,8 @@ public class DrawioParser implements Parser {
         for(Element edge : edges){
             try{
                 String styleValue = edge.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).strip();
-                if(styleValue.matches(Tokens.CONNECTION.getValue())){
-                    addConnection(edge);
+                if(styleValue.matches(Tokens.EDGE.getValue())){
+                    addEdge(edge);
                 }
                 else{
                     addGeneralization(edge);
@@ -145,9 +145,9 @@ public class DrawioParser implements Parser {
 
     private void addGeneralization(Element edge){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
-        DataClass source = diagram.findVertexById(
+        Vertex source = diagram.findVertexById(
                 edge.getAttribute(XMLTags.TARGET_ATTRIBUTE.getValue()).strip()).orElse(null);
-        DataClass target = diagram.findVertexById(
+        Vertex target = diagram.findVertexById(
                 edge.getAttribute(XMLTags.SOURCE_ATTRIBUTE.getValue()).strip()).orElse(null);
 
         List<String> edgeDescriptions = descriptions.stream()
@@ -178,11 +178,11 @@ public class DrawioParser implements Parser {
     }
 
 
-    private void addConnection(Element edge){
+    private void addEdge(Element edge){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
-        DataClass source = diagram.findVertexById(edge.getAttribute(XMLTags.TARGET_ATTRIBUTE.getValue()).strip())
+        Vertex source = diagram.findVertexById(edge.getAttribute(XMLTags.TARGET_ATTRIBUTE.getValue()).strip())
                 .orElse(null);
-        DataClass target = diagram.findVertexById(edge.getAttribute(XMLTags.SOURCE_ATTRIBUTE.getValue()).strip())
+        Vertex target = diagram.findVertexById(edge.getAttribute(XMLTags.SOURCE_ATTRIBUTE.getValue()).strip())
                 .orElse(null);
 
         List<String> edgeDescriptions = descriptions.stream()
@@ -195,7 +195,7 @@ public class DrawioParser implements Parser {
                 .findAny()
                 .orElse(null);
 
-        diagram.addEdge( Connection.builder().id(id)
+        diagram.addEdge( Edge.builder().id(id)
                         .source(source)
                         .target(target)
                         .cardinality(cardinality)

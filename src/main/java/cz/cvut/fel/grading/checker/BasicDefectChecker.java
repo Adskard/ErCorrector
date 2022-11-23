@@ -1,8 +1,9 @@
 package cz.cvut.fel.grading.checker;
 
+import cz.cvut.fel.enums.Coverage;
+import cz.cvut.fel.enums.Disjointness;
 import cz.cvut.fel.grading.configuration.value.ConfigValue;
 import cz.cvut.fel.grading.defect.BasicDefect;
-import cz.cvut.fel.grading.defect.Defect;
 import cz.cvut.fel.enums.Cardinality;
 import cz.cvut.fel.enums.DefectType;
 import cz.cvut.fel.model.*;
@@ -10,11 +11,61 @@ import lombok.extern.java.Log;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Class BasicDefectChecker a collection of static functions
+ * used to check diagram for BasicDefects.
+ *
+ * @author Adam Skarda
+ */
 @Log
 public class BasicDefectChecker {
 
+    /**
+     * Checks given diagram for generalization Coverage and Disjointness validity
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which ancestor Entities had hierarchies without proper coverage and disjointness annotation
+     */
+    public static BasicDefect<Entity> checkHierarchyAnnotation(Diagram diagram, DefectType defectType, ConfigValue value){
+        StringBuilder info = new StringBuilder();
+        boolean defectPresence = false;
 
-    public static Defect checkMultivaluedAttributes(Diagram diagram, DefectType defectType, ConfigValue value){
+        var resultingDefectBuilder = BasicDefect.<Entity>basicBuilder();
+
+        float taskPoints = value.getPoints();
+
+        List<Entity> problematicAncestors = diagram.getEdges().stream()
+                .filter(Edge::isGeneralization)
+                .map(generalization -> (Generalization) generalization)
+                .filter(generalization -> !generalization.getCoverage().equals(Coverage.NOT_RECOGNIZED) ||
+                        !generalization.getDisjointness().equals(Disjointness.NOT_RECOGNIZED))
+                .map(Edge::getTarget)
+                .map(vertex -> (Entity) vertex)
+                .collect(Collectors.toList());
+
+        if(!problematicAncestors.isEmpty()){
+            defectPresence = true;
+            info.append("Disjointness or Coverage information not recognized or missing.");
+        }
+
+        return resultingDefectBuilder.type(defectType)
+                .points(taskPoints)
+                .additionalInfo(info.toString())
+                .incorrectObjects(problematicAncestors)
+                .present(defectPresence)
+                .build();
+    }
+
+
+    /**
+     * Checks given diagram for multivalued attributes with illegal cardinality 1..1
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Attributes had invalid cardinality
+     */
+    public static BasicDefect<Attribute> checkMultivaluedAttributes(Diagram diagram, DefectType defectType, ConfigValue value){
 
         StringBuilder info = new StringBuilder();
         boolean defectPresence = false;
@@ -24,12 +75,12 @@ public class BasicDefectChecker {
 
         float taskPoints = value.getPoints();
 
-        List<Connection> multivaluedConnections = diagram.getEdges().stream()
-                .filter(Connection::isAttributeConnection)
-                .filter(Connection::hasCardinality)
+        List<Edge> multivaluedEdges = diagram.getEdges().stream()
+                .filter(Edge::isAttributeConnection)
+                .filter(Edge::hasCardinality)
                 .collect(Collectors.toList());
 
-        if(multivaluedConnections.isEmpty()){
+        if(multivaluedEdges.isEmpty()){
             info.append("No multivalued attributes present, no points added");
             return resultingDefectBuilder.type(defectType)
                     .points(taskPoints)
@@ -39,13 +90,13 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        List<Connection> connectionsWithIllegalCardinality =  multivaluedConnections.stream()
-                    .filter(connection -> connection.getCardinality().equals(Cardinality.ONE))
+        List<Edge> edgesWithIllegalCardinality =  multivaluedEdges.stream()
+                    .filter(edge -> edge.getCardinality().equals(Cardinality.ONE))
                     .collect(Collectors.toList());
 
-        if(!connectionsWithIllegalCardinality.isEmpty()){
-            problematicAttributes.addAll(connectionsWithIllegalCardinality.stream()
-                    .map(connection -> (Attribute)connection.getSource())
+        if(!edgesWithIllegalCardinality.isEmpty()){
+            problematicAttributes.addAll(edgesWithIllegalCardinality.stream()
+                    .map(edge -> (Attribute)edge.getSource())
                     .collect(Collectors.toList()));
 
             info.append(String.format("Multivalued attributes: %s with incorrect cardinality 1..1", problematicAttributes));
@@ -62,14 +113,18 @@ public class BasicDefectChecker {
 
     /**
      * For finding diagram connectivity. Diagram should have only one component.
-     * It achieves this by doing a DFS and comparing visited nodes to diagram vertices.
+     * Resulting defect has all Vertices that were not present in the main diagram component.
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Vertices were not found in main diagram component
      */
-    public static Defect checkDiagramComponent(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Vertex> checkDiagramComponent(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
         StringBuilder info = new StringBuilder();
 
-        var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
+        var resultingDefectBuilder = BasicDefect.<Vertex>basicBuilder();
 
         float points = value.getPoints();
 
@@ -84,7 +139,7 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        List<DataClass> notInMainComponent = diagram.getMissingVerticesFromMainComponent();
+        List<Vertex> notInMainComponent = diagram.getMissingVerticesFromMainComponent();
 
         if(!notInMainComponent.isEmpty()){
             info.append(String.format("Vertices not in main component: %s", notInMainComponent));
@@ -103,13 +158,17 @@ public class BasicDefectChecker {
     }
 
     /**
-     * For finding out if every non-weak entity has an identifier
+     * For finding out if every entity has an identifier.
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Entities were modeled improperly
      */
-    public static Defect checkAllEntityIds(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Entity> checkAllEntityIds(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
 
-        var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
+        var resultingDefectBuilder = BasicDefect.<Entity>basicBuilder();
 
         float points = value.getPoints();
 
@@ -123,7 +182,7 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        List<DataClass> entitiesWithoutKeys = diagram.getEntities().stream()
+        List<Entity> entitiesWithoutKeys = diagram.getEntities().stream()
                 .filter(entity -> !entity.hasIdentifier())
                 .collect(Collectors.toList());
 
@@ -142,9 +201,14 @@ public class BasicDefectChecker {
 
     /**
      * For finding out if weak entities are properly identified by their composite key.
-     * Weak entity must be connected to relationship with non-weak entity with 1..1 cardinality
+     * Weak entity must be connected to relationship with 1..1 cardinality through a composite key.
+     * Composite key has to have an attribute member.
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which weak entities were modeled improperly
      */
-    public static Defect checkWeakEntities(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Entity> checkWeakEntities(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
 
@@ -185,17 +249,20 @@ public class BasicDefectChecker {
     }
 
     /**
-     * For finding out if cardinalities are present where they should be.
-     * Entity - Relationship connections
+     * For finding out if cardinalities are present on every Entity - Relationship Edge.
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Relationship-Entity Edge did not have a valid Cardinality
      */
-    public static Defect checkCardinalities(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Edge> checkCardinalities(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
 
-        var resultingDefectBuilder = BasicDefect.<Connection>basicBuilder();
+        var resultingDefectBuilder = BasicDefect.<Edge>basicBuilder();
         float points = value.getPoints();
 
-        if(diagram.getEdges().stream().noneMatch(Connection::isRelationshipConnection)){
+        if(diagram.getEdges().stream().noneMatch(Edge::isRelationshipConnection)){
             return resultingDefectBuilder
                     .type(defectType)
                     .additionalInfo("No relationship connection present in diagram")
@@ -205,12 +272,12 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        List<Connection> connectionsWithoutCardinality = diagram.getEdges().stream()
-                .filter(Connection::isRelationshipConnection)
-                .filter(connection -> !connection.hasCardinality())
+        List<Edge> edgesWithoutCardinality = diagram.getEdges().stream()
+                .filter(Edge::isRelationshipConnection)
+                .filter(edge -> !edge.hasCardinality())
                 .collect(Collectors.toList());
 
-        if(!connectionsWithoutCardinality.isEmpty()){
+        if(!edgesWithoutCardinality.isEmpty()){
             defectPresence = true;
         }
 
@@ -218,19 +285,23 @@ public class BasicDefectChecker {
                 .type(defectType)
                 .additionalInfo("")
                 .present(defectPresence)
-                .incorrectObjects(connectionsWithoutCardinality)
+                .incorrectObjects(edgesWithoutCardinality)
                 .points(points)
                 .build();
     }
 
     /**
-     * For finding out if there are duplicate entity and relationship names
+     * For finding out if there are duplicate entity and relationship names in diagram.
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Vertices have duplicate names
      */
-    public static Defect checkDuplicateNames(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Vertex> checkDuplicateNames(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
 
-        var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
+        var resultingDefectBuilder = BasicDefect.<Vertex>basicBuilder();
         float points = value.getPoints();
 
         if(diagram.getEntities().isEmpty()){
@@ -243,10 +314,11 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        Set<DataClass> unique = new HashSet<>();
+        Set<String> unique = new HashSet<>();
 
-        List<DataClass> duplicate = diagram.getVertices().stream()
-                .filter(dataClass -> !unique.add(dataClass))
+        List<Vertex> duplicate = diagram.getVertices().stream()
+                .filter(vertex -> !vertex.isAttribute())
+                .filter(vertex -> !unique.add(vertex.getName()))
                 .collect(Collectors.toList());
 
         if(!duplicate.isEmpty()){
@@ -264,8 +336,12 @@ public class BasicDefectChecker {
 
     /**
      * For finding duplicate attribute names on one Entity or Relationship
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Vertices have what duplicate names
      */
-    public static Defect checkDuplicateAttributes(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Attribute> checkDuplicateAttributes(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
         StringBuilder info = new StringBuilder();
@@ -288,18 +364,19 @@ public class BasicDefectChecker {
 
         List<Attribute> duplicateAttributes = new LinkedList<>();
 
-        for(DataClass dataClass : diagram.getVertices()){
-            List<Attribute> duplicates = findDuplicateAttributesOnVertex(dataClass);
+        for(Vertex vertex : diagram.getVertices()){
+            List<Attribute> duplicates = findDuplicateAttributesOnVertex(vertex);
 
             if(!duplicates.isEmpty()){
                 List<String> duplicateNames = duplicates.stream()
                         .map(Attribute::getName)
+                        .distinct()
                         .collect(Collectors.toList());
 
                 duplicateAttributes.addAll(duplicates);
 
-                info.append(String.format("%s are duplicate attribute names on %s\n",
-                        duplicateNames, dataClass.getName()));
+                info.append(String.format("%s are duplicate attribute names on %s.",
+                        duplicateNames, vertex.getName()));
             }
         }
 
@@ -316,32 +393,35 @@ public class BasicDefectChecker {
                 .build();
     }
 
-    private static List<Attribute> findDuplicateAttributesOnVertex(DataClass vertex){
-        List<Attribute> all = vertex.getAdjacentDataClasses().stream()
-                .filter(DataClass::isAttribute)
-                .map(dataClass -> (Attribute) dataClass)
-                .collect(Collectors.toList());
-
-        List<Attribute> distinct = vertex.getAdjacentDataClasses().stream()
-                .filter(DataClass::isAttribute)
-                .map(dataClass -> (Attribute) dataClass)
-                .distinct()
+    /**
+     * For finding duplicate attribute names on a Vertex
+     * @param vertex vertex on which to look for duplicate attribute names
+     * @return list of duplicate names without the first occurrance
+     */
+    private static List<Attribute> findDuplicateAttributesOnVertex(Vertex vertex){
+        Set<String> uniqueNames = new HashSet<>();
+        List<Attribute> all = vertex.getAdjacentVertices().stream()
+                .filter(Vertex::isAttribute)
+                .map(attribute -> (Attribute) attribute)
                 .collect(Collectors.toList());
 
         return all.stream()
-                .filter(unique -> !distinct.contains(unique))
-                .distinct()
+                .filter(attribute -> !uniqueNames.add(attribute.getName()))
                 .collect(Collectors.toList());
     }
 
     /**
-     * For finding out if every vertex is named
+     * For finding out if every vertex has a name that is not blank
+     * @param diagram diagram to be checked
+     * @param defectType DefectType associated with this check
+     * @param value configuration value for this defect type
+     * @return Defect describing which Vertices have no names
      */
-    public static Defect checkNamedVertices(Diagram diagram, DefectType defectType, ConfigValue value){
+    public static BasicDefect<Vertex> checkNamedVertices(Diagram diagram, DefectType defectType, ConfigValue value){
 
         boolean defectPresence = false;
 
-        var resultingDefectBuilder = BasicDefect.<DataClass>basicBuilder();
+        var resultingDefectBuilder = BasicDefect.<Vertex>basicBuilder();
 
         float points = value.getPoints();
 
@@ -355,8 +435,8 @@ public class BasicDefectChecker {
                     .build();
         }
 
-        List<DataClass> unnamedVertices = diagram.getVertices().stream()
-                .filter(dataClass -> dataClass.getName().isEmpty() || dataClass.getName().isBlank())
+        List<Vertex> unnamedVertices = diagram.getVertices().stream()
+                .filter(vertex -> vertex.getName().isEmpty() || vertex.getName().isBlank())
                 .collect(Collectors.toList());
 
         if(!unnamedVertices.isEmpty()){

@@ -6,6 +6,11 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+/**
+ * Class HierarchyPair is a utility class that describes a type of
+ * Er diagram hierarchy. It is a pair of Coverage and Disjointness values.
+ * @author Adam Skarda
+ */
 @Getter
 public class HierarchyPair {
     private final Coverage coverage;

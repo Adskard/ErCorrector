@@ -16,14 +16,21 @@ import cz.cvut.fel.output.stringifier.DiagramVisitor;
  */
 @Getter
 @Setter
-public class Attribute extends DataClass implements Key, DiagramComponent{
+public class Attribute extends Vertex implements Key, DiagramComponent{
+
     /**
      * True if this Attribute is a key, false otherwise.
      */
     private final Boolean isKey;
 
+    /**
+     * For finding out if this is structured attribute.
+     * Structured attribute is connected to attributes and an Entity
+     * @return true is structured else false
+     */
     public boolean isStructured(){
-        return !super.getDataClassAttributes().isEmpty();
+        return !super.getAttributes().isEmpty() &&
+                super.getAttributes().stream().anyMatch(Vertex::isEntity);
     }
 
     @Builder

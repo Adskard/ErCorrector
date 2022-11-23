@@ -53,7 +53,7 @@ cardinality_pairs = all, 3.023123
 #minimal_count : int, maximal_count : int, points_if_correct : float
 recursion = 17,20,1.000000000000000000000000000000000000
 
-#Number of entity connections on a relationship, minimal number of such relationships
+#Number of entity edges on a relationship, minimal number of such relationships
 n_ary_relationship = 2, 5, 3,1.00
 
 

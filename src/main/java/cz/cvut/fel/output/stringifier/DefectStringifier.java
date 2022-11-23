@@ -5,9 +5,19 @@ import cz.cvut.fel.grading.defect.Defect;
 import cz.cvut.fel.grading.defect.QuantityDefect;
 import cz.cvut.fel.grading.defect.UsageDefect;
 
+/**
+ * Class DefectStringifier is an implementation of Visitor pattern.
+ * Its use is to create comprehensive string representation of various Defects.
+ * @author Adam Skarda
+ */
 public class DefectStringifier implements DefectVisitor{
+    /**
+     * Creates a string representation of given BasicDefect
+     * @param basicDefect defect we want to stringify
+     * @return String representing given defect
+     */
     @Override
-    public String visit(BasicDefect basicDefect) {
+    public String visit(BasicDefect<?> basicDefect) {
         StringBuilder builder = new StringBuilder();
 
         builder.append(String.format("%s\n", basicDefect.getType().getMessage()));
@@ -28,8 +38,13 @@ public class DefectStringifier implements DefectVisitor{
         return builder.toString();
     }
 
+    /**
+     * Creates a string representation of given UsageDefect
+     * @param usageDefect defect we want to stringify
+     * @return String representing given defect
+     */
     @Override
-    public String visit(UsageDefect usageDefect) {
+    public String visit(UsageDefect<?> usageDefect) {
         StringBuilder builder = new StringBuilder();
         builder.append(String.format("%s\n", usageDefect.getType().getMessage()));
 
@@ -50,6 +65,11 @@ public class DefectStringifier implements DefectVisitor{
         return builder.toString();
     }
 
+    /**
+     * Creates a string representation of given QuantityDefect
+     * @param quantityDefect defect we want to stringify
+     * @return String representing given defect
+     */
     @Override
     public String visit(QuantityDefect quantityDefect) {
         StringBuilder builder = new StringBuilder();
@@ -71,6 +91,11 @@ public class DefectStringifier implements DefectVisitor{
         return builder.toString();
     }
 
+    /**
+     * Creates a string representation of given Defect
+     * @param defect defect we want to stringify
+     * @return String representing given defect
+     */
     @Override
     public String visit(Defect defect) {
         StringBuilder builder = new StringBuilder();

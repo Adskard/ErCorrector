@@ -43,7 +43,7 @@ public class ErdiaParser implements Parser {
     /**
      * Extracts given document elements into corresponding Diagram components.
      * Goes through document elements separating them into edges and vertices then parses
-     * such elements as Connections and DataClasses.
+     * such elements as Edges and Vertices.
      *
      * @param document document of edge and vertex elements
      * @return Diagram of parsed document elements
@@ -91,22 +91,22 @@ public class ErdiaParser implements Parser {
     }
 
     /**
-     * Adds Connections to this diagram which link Diagram DataClasses.
+     * Adds Connections to this diagram which link Diagram Vertices.
      * Goes through given xml elements with edge attribute finds their source and target
-     * and creates a connection based on the style attribute and additional information
+     * and creates an edge based on the style attribute and additional information
      * from vertex elements.
      *
-     * @see DataClass
+     * @see Vertex
      * @see Diagram
-     * @see Connection
+     * @see Edge
      */
     private void addEdgesToDiagram(){
         for(Element edge : edges){
             try{
                 String sourceId = edge.getAttribute(XMLTags.SOURCE_ATTRIBUTE.getValue()).strip();
                 String targetId = edge.getAttribute(XMLTags.TARGET_ATTRIBUTE.getValue()).strip();
-                DataClass source = diagram.findVertexById(sourceId).orElse(null);
-                DataClass target = diagram.findVertexById(targetId).orElse(null);
+                Vertex source = diagram.findVertexById(sourceId).orElse(null);
+                Vertex target = diagram.findVertexById(targetId).orElse(null);
 
                 if(Objects.nonNull(source) && Objects.nonNull(target)) {
                     if (edge.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.ATTRIBUTE_CONNECTOR.getValue())) {
@@ -124,16 +124,16 @@ public class ErdiaParser implements Parser {
                 log.log(Level.WARNING, "Exception while parsing edge ", e);
             }
         }
-        diagram.organizeConnections();
+        diagram.organizeEdges();
     }
 
     /**
-     * Adds a hierarchical generalization connection to the diagram
+     * Adds a hierarchical generalization edge to the diagram
      * @param edge Edge element connecting source XML hierarchy tag and target child entity
      * @param sourceId XML tag id of connecting hierarchy
      * @param target Child Entity from diagram to be connected to its parent through hierarchy
      */
-    private void addGeneralization(Element edge, String sourceId, DataClass target){
+    private void addGeneralization(Element edge, String sourceId, Vertex target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
 
         Element sourceHierarchy = vertices.stream()
@@ -145,9 +145,9 @@ public class ErdiaParser implements Parser {
 
         Element hierarchyInfo = (Element) sourceHierarchy.getFirstChild();
 
-        //Finds a target entity for the generalization connection
+        //Finds a target entity for the generalization edge
         //through the edge connecting associated hierarchy and the target entity
-        DataClass generalizationTarget = diagram.findVertexById(
+        Vertex generalizationTarget = diagram.findVertexById(
                         edges.stream()
                                 .filter((generalization)-> generalization.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue())
                                         .contains(Tokens.GENERALIZATION.getValue()) &&
@@ -162,7 +162,7 @@ public class ErdiaParser implements Parser {
                 .orElseThrow(()->
                         new ParserException("Could not find source entity forming a hierarchy with id=" + sourceId));
 
-        Connection generalization = Generalization.GeneralizationBuilder().id(id)
+        Edge generalization = Generalization.GeneralizationBuilder().id(id)
                 .source(target)
                 .target(generalizationTarget)
                 .covering(Coverage
@@ -173,34 +173,34 @@ public class ErdiaParser implements Parser {
                 .build();
 
         diagram.addEdge(generalization);
-        target.addConnection(generalization);
-        generalizationTarget.addConnection(generalization);
-        log.log(Level.FINER, String.format("Added connection: %s", generalization));
+        target.addEdge(generalization);
+        generalizationTarget.addEdge(generalization);
+        log.log(Level.FINER, String.format("Added edge: %s", generalization));
     }
 
     /**
      * Adds Connection joining relationship and an Entity to the diagram
-     * @param edge Edge element connecting source and target DataClasses
+     * @param edge Edge element connecting source and target Vertices
      * @param source Diagram vertex either Entity or Relationship
      * @param target Diagram vertex either Entity or Relationship
      */
-    private void addRelationshipConnection(Element edge, DataClass source, DataClass target){
+    private void addRelationshipConnection(Element edge, Vertex source, Vertex target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
         Element innerElement = (Element) edge.getFirstChild();
-        Connection relationshipConnection = Connection.builder().id(id)
+        Edge relationshipEdge = Edge.builder().id(id)
                 .source(source)
                 .target(target)
                 .cardinality(Cardinality.decideCardinality(
                         innerElement.getAttribute(XMLTags.CARDINALITY_MIN_ATTRIBUTE.getValue()),
                         innerElement.getAttribute(XMLTags.CARDINALITY_MAX_ATTRIBUTE.getValue())))
                 .build();
-        relationshipConnection.addDescription(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()));
+        relationshipEdge.addDescription(innerElement.getAttribute(XMLTags.NAME_ATTRIBUTE.getValue()));
 
-        diagram.addEdge(relationshipConnection);
-        source.addConnection(relationshipConnection);
-        target.addConnection(relationshipConnection);
+        diagram.addEdge(relationshipEdge);
+        source.addEdge(relationshipEdge);
+        target.addEdge(relationshipEdge);
 
-        log.log(Level.FINER, String.format("Added connection: %s", relationshipConnection));
+        log.log(Level.FINER, String.format("Added edge: %s", relationshipEdge));
     }
 
     /**
@@ -209,7 +209,7 @@ public class ErdiaParser implements Parser {
      * @param source Diagram vertex
      * @param target Diagram vertex
      */
-    private void addAttributeConnection(Element edge, DataClass source, DataClass target){
+    private void addAttributeConnection(Element edge, Vertex source, Vertex target){
         String id = edge.getAttribute(XMLTags.ID_ATTRIBUTE.getValue()).strip();
 
         Element originalAttribute = (Element) vertices.stream()
@@ -220,7 +220,7 @@ public class ErdiaParser implements Parser {
                                 " for AttributeConnector id=" + id))
                 .getFirstChild();
 
-        Connection attributeConnection = Connection.builder().id(id)
+        Edge attributeEdge = Edge.builder().id(id)
                 .source(source)
                 .target(target)
                 .cardinality(Cardinality.decideCardinality(
@@ -228,20 +228,20 @@ public class ErdiaParser implements Parser {
                         originalAttribute.getAttribute(XMLTags.CARDINALITY_MAX_ATTRIBUTE.getValue())))
                 .build();
 
-        diagram.addEdge(attributeConnection);
-        source.addConnection(attributeConnection);
-        target.addConnection(attributeConnection);
+        diagram.addEdge(attributeEdge);
+        source.addEdge(attributeEdge);
+        target.addEdge(attributeEdge);
 
-        log.log(Level.FINER, String.format("Added connection: %s", attributeConnection));
+        log.log(Level.FINER, String.format("Added edge: %s", attributeEdge));
     }
 
     /**
-     * Populates this Diagram with vertices (DataClasses) parsed from given elements.
-     * Parses xml elements with vertex attribute by style attribute to DataClasses - Attribute, Entity, Relationship.
+     * Populates this Diagram with vertices (Vertices) parsed from given elements.
+     * Parses xml elements with vertex attribute by style attribute to Vertices - Attribute, Entity, Relationship.
      * Conserves id, name and key values of parsed elements. Does not infer multivalued attributes and
      * weak entities, composite identifier members.
      *
-     * @see DataClass
+     * @see Vertex
      * @see Diagram
      */
     private void addVerticesToDiagram(){
@@ -286,7 +286,7 @@ public class ErdiaParser implements Parser {
                 if(vertex.getAttribute(XMLTags.STYLE_ATTRIBUTE.getValue()).contains(Tokens.COMPOSITE_ID.getValue())){
                     String vertexId = vertex.getAttribute(XMLTags.ID_ATTRIBUTE.getValue());
 
-                    List<Connection> compositeMemberEdges = edges.stream()
+                    List<Edge> compositeMemberEdges = edges.stream()
                             .filter((edge)->edge.getAttribute(XMLTags.SOURCE_ATTRIBUTE.getValue()).contains(vertexId))
                             .map((edge)->diagram.findEdgeById(
                                             edge.getAttribute(XMLTags.TARGET_ATTRIBUTE.getValue()))

@@ -5,13 +5,14 @@ import cz.cvut.fel.model.Diagram;
 import org.w3c.dom.Document;
 
 /**
+ * Interface defining a Diagram parser.
  * @author Adam Skarda
  */
 public interface Parser {
 
 
     /**
-     * Populates diagram with DataClasses and links them with Connections.
+     * Populates diagram with Vertices and links them with Edges.
      *
      * @param document Document to be parsed
      * @return Populated and connected Diagram

@@ -10,7 +10,7 @@ import cz.cvut.fel.grading.struct.HierarchyPair;
 import cz.cvut.fel.enums.Cardinality;
 import cz.cvut.fel.enums.DefectType;
 import lombok.extern.java.Log;
-import cz.cvut.fel.model.Connection;
+import cz.cvut.fel.model.Edge;
 import cz.cvut.fel.model.Diagram;
 import cz.cvut.fel.model.Generalization;
 
@@ -18,9 +18,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Class UsageDefectChecker is an aggregation of static functions
+ * that produce UsageDefects by checking a given diagram for their presence.
+ * @author Adam Skarda
+ */
 @Log
 public class UsageDefectChecker {
 
+    /**
+     * Checks the uses of cardinalities on relationship connections
+     * in comparison to the expected cardinalities set in configuration
+     * @param diagram Diagram to be checked for actual cardinality uses
+     * @param defectType Type of defect checked
+     * @param value configuration value with expected uses
+     * @return Defect describing the expected and actual usages
+     */
     public static Defect checkCardinality(Diagram diagram, DefectType defectType,
                                           CardinalityUsageConfigValue value){
         boolean defectPresence = false;
@@ -31,9 +44,9 @@ public class UsageDefectChecker {
         List<Cardinality> expectedCardinalities = value.getExpected();
 
         List<Cardinality> presentCardinalities = diagram.getEdges().stream()
-                .filter(Connection::isRelationshipConnection)
-                .filter(Connection::hasCardinality)
-                .map(Connection::getCardinality)
+                .filter(Edge::isRelationshipConnection)
+                .filter(Edge::hasCardinality)
+                .map(Edge::getCardinality)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -58,6 +71,14 @@ public class UsageDefectChecker {
                 .build();
     }
 
+    /**
+     * Checks the uses of CardinalityPairs i.e. pairs of cardinalities connecting
+     * two entities through a relationship in comparison to expected uses.
+     * @param diagram Diagram to be checked for actual cardinality uses
+     * @param defectType Type of defect checked
+     * @param value configuration value with expected uses
+     * @return Defect describing the expected and actual usages
+     */
     public static Defect checkCardinalityPairs(Diagram diagram, DefectType defectType,
                                           CardinalityPairUsageConfigValue value){
         boolean defectPresence = false;
@@ -70,9 +91,9 @@ public class UsageDefectChecker {
 
         List<CardinalityPair> allPairs = diagram.getRelationships().stream()
                 .map(relationship -> {
-                    List<Cardinality> cardinalities = relationship.getConnections().stream()
-                            .filter(Connection::isRelationshipConnection)
-                            .map(Connection::getCardinality)
+                    List<Cardinality> cardinalities = relationship.getEdges().stream()
+                            .filter(Edge::isRelationshipConnection)
+                            .map(Edge::getCardinality)
                             .distinct()
                             .collect(Collectors.toList());
 
@@ -106,6 +127,16 @@ public class UsageDefectChecker {
                 .build();
     }
 
+
+    /**
+     * Checks hierarchy type usages in a given diagram in comparison
+     * to expected uses of hierarchies. A hierarchy type is specified
+     * by a HierarchyPair which is pairing of Coverage and Disjointness information.
+     * @param diagram Diagram to be checked for actual cardinality uses
+     * @param defectType Type of defect checked
+     * @param value configuration value with expected uses
+     * @return Defect describing the expected and actual usages
+     */
     public static Defect checkHierarchy(Diagram diagram, DefectType defectType,
                                           HierarchyPairUsageConfigValue value){
         boolean defectPresence = false;
@@ -116,8 +147,8 @@ public class UsageDefectChecker {
         List<HierarchyPair> expected = value.getExpected();
 
         List<HierarchyPair> actual = diagram.getEdges().stream()
-                .filter(Connection::isGeneralization)
-                .map(connection -> (Generalization)connection)
+                .filter(Edge::isGeneralization)
+                .map(edge -> (Generalization)edge)
                 .map(gen -> new HierarchyPair(gen.getCoverage(), gen.getDisjointness()))
                 .distinct()
                 .collect(Collectors.toList());
@@ -143,6 +174,14 @@ public class UsageDefectChecker {
                 .build();
     }
 
+    /**
+     * Checks the Cardinality usages on connections to multivalued attributes in
+     * comparison to expected usages.
+     * @param diagram Diagram to be checked for actual cardinality uses
+     * @param defectType Type of defect checked
+     * @param value configuration value with expected uses
+     * @return Defect describing the expected and actual usages
+     */
     public static Defect checkMultivaluedAttributeCardinality(Diagram diagram, DefectType defectType,
                                                               CardinalityUsageConfigValue value){
 
@@ -157,9 +196,9 @@ public class UsageDefectChecker {
         expectedCardinalities.remove(Cardinality.ONE);
 
         List<Cardinality> presentCardinalities = diagram.getEdges().stream()
-                .filter(Connection::isAttributeConnection)
-                .filter(Connection::hasCardinality)
-                .map(Connection::getCardinality)
+                .filter(Edge::isAttributeConnection)
+                .filter(Edge::hasCardinality)
+                .map(Edge::getCardinality)
                 .distinct()
                 .collect(Collectors.toList());
 

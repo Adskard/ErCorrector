@@ -1,5 +1,9 @@
 package cz.cvut.fel.exception;
 
+/**
+ * Exception encountered during Diagram parsing
+ * @see cz.cvut.fel.parser.Parser
+ */
 public class ParserException extends RuntimeException{
     public ParserException() {
         super();

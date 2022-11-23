@@ -13,6 +13,9 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
+ * Class for Diagram Defect checking based on Configuration.
+ * Used for Diagram error checking and Task/assignment checking.
+ * These checks are represented by the Defect class.
  *
  * @author Adam Skarda
  */
@@ -24,13 +27,18 @@ public class DefectChecker {
     private final Diagram diagram;
     private final ConfigExtractor extractor;
 
+    /**
+     * Basic constructor
+     * @param diagram Diagram to be checked for defects
+     * @param extractor Configuration for used defects
+     */
     public DefectChecker(Diagram diagram, ConfigExtractor extractor){
         this.diagram = diagram;
         this.extractor = extractor;
     }
 
     /**
-     *
+     * Searches for presence of defects in diagram
      * @return List of checked defects
      */
     public List<Defect> findDefects(){
@@ -52,10 +60,11 @@ public class DefectChecker {
         checkNamedVertices();
         checkDuplicateNames();
         checkDuplicateAttributes();
+        checkHierarchyAnnotation();
     }
 
     /**
-     * Checks for presence of assignment specific defects
+     * Checks for presence of assignment/task specific defects
      */
     private void findAssignmentSpecificDefects(){
         checkMultivaluedAttributeCount();
@@ -78,6 +87,9 @@ public class DefectChecker {
 
     /**
      * Checks presence of multivalued attributes in diagram and their count.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkMultivaluedAttributeCount(){
         log.fine("Checking multivalued attribute count");
@@ -99,6 +111,9 @@ public class DefectChecker {
 
     /**
      * Checks number of used entities in diagram.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkEntityCount(){
         log.fine("Checking entity count");
@@ -117,7 +132,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks for recursive relationships in diagram.
+     * Checks for number of used recursive relationships in diagram.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkRecursiveRelationshipCount(){
         log.fine("Checking recursive relationship count");
@@ -137,7 +155,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks diagram for weak entities and their count.
+     * Checks diagram for number of weak entities.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkWeakEntityCount(){
         log.fine("Checking weak entity count");
@@ -157,6 +178,9 @@ public class DefectChecker {
 
     /**
      * Checks diagram for the number of composite identifiers.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkCompositeIdentifierCount(){
         log.fine("Checking composite identification count");
@@ -173,7 +197,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks structured attribute usage in diagram.
+     * Checks for number of structured attributes in diagram.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkStructuredAttributeCount(){
         log.fine("Checking structured attribute count");
@@ -190,7 +217,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks diagram for entities with multiple identifiers.
+     * Checks diagram for number of entities with multiple identifiers.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkMultipleIdentifierCount(){
         log.fine("Checking entity with multiple identifiers count");
@@ -207,8 +237,13 @@ public class DefectChecker {
     }
 
     /**
-     * Checks diagram for n-ary relationships.
-     * N-ary relationship is between 3 or more entities.
+     * Checks diagram for number of n-ary relationships.
+     * N-ary relationship is defined by the number of edges to entities.
+     * So relationship with 3 edges to entities is ternary and so on.
+     * The minimum number of edges comprising n-ary relationship can be configured.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkNaryRelationshipCount(){
         log.fine("Check n-ary relationships");
@@ -228,7 +263,10 @@ public class DefectChecker {
 
 
     /**
-     * Checks hierarchy count.
+     * Checks the number of hierarchies in diagram.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkHierarchyCount(){
         log.fine("Checking hierarchy count");
@@ -247,7 +285,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks attribute count.
+     * Checks for number of attributes in diagram.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkAttributeCount(){
         log.fine("Checking attribute count");
@@ -266,7 +307,10 @@ public class DefectChecker {
     }
 
     /**
-     * Checks relationship count.
+     * Checks for number of relationships.
+     * Adds the resulting QuantityDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkRelationshipCount(){
         log.fine("Checking relationship count");
@@ -285,7 +329,13 @@ public class DefectChecker {
     }
 
     /**
-     * Checks cardinality usage on multivalued attributes
+     * Checks cardinality usage on multivalued attributes.
+     * That means checking if all expected cardinalities
+     * were used on multivalued attribute connection.
+     * Expected cardinalities are specified in configuration.
+     * Adds the resulting UsageDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkMultivaluedAttributeCardinalityUsage(){
         log.fine("Checking multivalued attribute cardinality usages");
@@ -304,7 +354,13 @@ public class DefectChecker {
     }
 
     /**
-     * Checks types of cardinalities used and their respective count.
+     * Checks types of cardinalities used on relationship connections.
+     * That means checking if all expected cardinalities
+     * were used on multivalued attribute edge.
+     * Adds the resulting UsageDefect into the List of defects.
+     * Expected cardinalities are specified in configuration.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkCardinalityUsage(){
         log.fine("Checking cardinality usage");
@@ -325,8 +381,14 @@ public class DefectChecker {
     }
 
 
+
     /**
-     * Checks hierarchy usage in diagram. How many were used, which types were used.
+     * Checks types of hierarchy usage in diagram.
+     * That means uses of HierarchyPair Coverage and Disjointness.
+     * Expected HierarchyPairs are specified in configuration.
+     * Adds the resulting UsageDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkHierarchyUsage(){
         log.log(Level.FINE, "Checking hierarchy pairs");
@@ -349,7 +411,12 @@ public class DefectChecker {
 
 
     /**
-     * Checks for cardinality pair usage..
+     * Checks for cardinality pair usage in diagram.
+     * That means pairs of cardinalities connecting two entities through a relationship.
+     * Expected CardinalityPairs are specified in configuration.
+     * Adds the resulting UsageDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkCardinalityPairUsage(){
         log.log(Level.FINE, "Checking cardinality pairs");
@@ -370,10 +437,30 @@ public class DefectChecker {
     }
 
 
+    /**
+     * For finding out if all generalizations have valid Coverage and Disjointness
+     */
+    private void checkHierarchyAnnotation(){
+        log.log(Level.FINE, "Checking hierarchy annotation");
+
+        DefectType defectType = DefectType.HIERARCHY_ANNOTATED;
+
+        if(!extractor.isEnabledInConfig(defectType)) return;
+
+        try{
+            ConfigValue value = extractor.getConfigValue(defectType);
+            defects.add(BasicDefectChecker.checkHierarchyAnnotation(diagram, defectType,value));
+        }
+        catch(RuntimeException ex){
+            log.log(Level.WARNING, "Exception during hierarchy annotation checking", ex);
+        }
+    }
 
     /**
-     * For finding diagram connectivity. Diagram should have only one component.
-     * It achieves this by doing a DFS and comparing visited nodes to diagram vertices.
+     * For finding out if diagram is in one component.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkDiagramComponent(){
         log.log(Level.FINE, "Checking diagram component");
@@ -392,7 +479,11 @@ public class DefectChecker {
     }
 
     /**
-     * For finding out if every non-weak entity has an identifier
+     * For finding out if every non-weak entity has an identifier.
+     * An identifier can be both simple attribute or composite.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkAllEntityIds(){
         log.log(Level.FINE, "Checking entity identification");
@@ -411,8 +502,11 @@ public class DefectChecker {
     }
 
     /**
-     * Checks if all attributes with cardinality connection are proper multivalued attributes
-     * i.e. not cardinality 1..1.
+     * Checks if all multivalued attributes with cardinality on their Edge are proper multivalued attributes
+     * i.e. checking that the edge cardinality is not 1..1.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkIllegalMultivaluedAttribute(){
         log.fine("Checking multivalued attribute legality");
@@ -432,7 +526,11 @@ public class DefectChecker {
 
     /**
      * For finding out if weak entities are properly identified by their composite key.
-     * Weak entity must be connected to relationship with non-weak entity with 1..1 cardinality
+     * Composite key must be comprised of connection to a relationship with 1..1 cardinality
+     * and an attribute.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkWeakEntities(){
         log.log(Level.FINE, "Checking weak entities");
@@ -453,10 +551,13 @@ public class DefectChecker {
 
     /**
      * For finding out if cardinalities are present where they should be.
-     * Entity - Relationship connections
+     * i.e. every Entity - Relationship edge.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkCardinalities(){
-        log.log(Level.FINE, "Checking connection cardinalities");
+        log.log(Level.FINE, "Checking edge cardinalities");
 
         DefectType defectType = DefectType.CARDINALITIES_PRESENT;
 
@@ -467,12 +568,15 @@ public class DefectChecker {
             defects.add(BasicDefectChecker.checkCardinalities(diagram, defectType, value));
         }
         catch(RuntimeException ex){
-            log.log(Level.WARNING, "Error checking presence of cardinalities on connections!", ex);
+            log.log(Level.WARNING, "Error checking presence of cardinalities on edges!", ex);
         }
     }
 
     /**
-     * For finding out if there are duplicate entity and relationship names
+     * For finding out if there are duplicate entity and relationship names in diagram.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkDuplicateNames(){
         log.log(Level.FINE, "Checking duplicate names");
@@ -492,6 +596,9 @@ public class DefectChecker {
 
     /**
      * For finding duplicate attribute names on one Entity or Relationship
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkDuplicateAttributes(){
         log.log(Level.FINE, "Checking duplicate attributes");
@@ -510,7 +617,10 @@ public class DefectChecker {
     }
 
     /**
-     * For finding out if every vertex is named
+     * For finding out if every vertex is named.
+     * Adds the resulting BasicDefect into the List of defects.
+     * Can be enabled or disabled in configuration.
+     * @see ConfigExtractor
      */
     private void checkNamedVertices(){
         log.log(Level.FINE, "Checking named vertices");

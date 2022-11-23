@@ -7,15 +7,15 @@ import lombok.Getter;
 import java.util.*;
 
 /**
- * The class composite is a composition of Connections to members of
- * a composite key and the associated entity.
+ * The class composite is a representation of composite key
+ * and stores members and the associated entity.
  */
 @Getter
 public class Composite implements Key, DiagramComponent {
     /**
-     * Connections and members of composite key.
+     * Edges and members of composite key.
      */
-    private final HashMap<Connection, DataClass> compositeMembers = new HashMap<>();
+    private final HashMap<Edge, Vertex> compositeMembers = new HashMap<>();
     /**
      * Entity identified by this composite identifier.
      */
@@ -31,36 +31,39 @@ public class Composite implements Key, DiagramComponent {
     }
 
     /**
-     * Adds a Connection as a member of this composite
-     * @param member Connection of composite
+     * Adds an Edge as a member of this composite
+     * @param member Edge of composite
      */
-    public void addCompositeMember(Connection connection, DataClass member){
-        compositeMembers.put(connection, member);
+    public void addCompositeMember(Edge edge, Vertex member){
+        compositeMembers.put(edge, member);
     }
 
+    /**
+     * For finding out if composite key has a relationship as its part
+     * @return true if relationship is member of this composite key else false
+     */
     public boolean isRelationshipBased(){
-        return compositeMembers.values().stream().anyMatch(DataClass::isRelationship);
+        return compositeMembers.values().stream().anyMatch(Vertex::isRelationship);
     }
 
-    public Optional<Connection> getRelationshipConnection(){
-        return compositeMembers.keySet().stream()
-                .filter(Connection::isRelationshipConnection)
-                .findAny();
-    }
+    /**
+     * For finding out if composite correctly identifies a weak entity
+     * @return true if composite ids a weak entity, else false
+     */
     public boolean isWeakIdentifier(){
         boolean idAttribute = compositeMembers.keySet().stream()
-                .filter(Connection::isAttributeConnection)
-                .anyMatch(connection -> !connection.hasCardinality() ||
-                        connection.getCardinality().equals(Cardinality.ONE_TO_MANY) ||
-                        connection.getCardinality().equals(Cardinality.ONE));
+                .filter(Edge::isAttributeConnection)
+                .anyMatch(edge -> !edge.hasCardinality() ||
+                        edge.getCardinality().equals(Cardinality.ONE_TO_MANY) ||
+                        edge.getCardinality().equals(Cardinality.ONE));
 
         if(!idAttribute){
             return false;
         }
 
         return compositeMembers.keySet().stream()
-                .filter(Connection::isRelationshipConnection)
-                .anyMatch(Connection::isIdentifyingConnection);
+                .filter(Edge::isRelationshipConnection)
+                .anyMatch(Edge::isIdentifyingEdge);
     }
 
     @Override

@@ -19,7 +19,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Generalization extends Connection{
+public class Generalization extends Edge {
 
     /**
      * Generalization Coverage either complete, partial, or not recognized
@@ -32,7 +32,7 @@ public class Generalization extends Connection{
     private Disjointness disjointness;
 
     @Builder(builderMethodName = "GeneralizationBuilder")
-    public Generalization(String id, DataClass source, DataClass target,
+    public Generalization(String id, Vertex source, Vertex target,
                           Coverage covering, Disjointness disjointness) {
         super(id, source, target);
         this.coverage = covering;

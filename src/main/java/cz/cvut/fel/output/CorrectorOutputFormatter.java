@@ -5,10 +5,29 @@ import cz.cvut.fel.grading.defect.Defect;
 import cz.cvut.fel.output.stringifier.DefectStringifier;
 import cz.cvut.fel.output.stringifier.DefectVisitor;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+/**
+ * Class CorrectorOutputFormatter is a collection of static functions
+ * which have a goal of creating a comprehensive string representation
+ * of AssignmentGrader.
+ *
+ * @see AssignmentGrader
+ * @author Adam Skarda
+ */
 public class CorrectorOutputFormatter {
+
+    /**
+     * Creates a string representation of a grader.
+     * This representation takes into consideration
+     * Defects found during grading and the final amount of points.
+     *
+     * @param grader grader to be made into string
+     * @return String representing a given grader
+     */
     public static String stringifyGrading(AssignmentGrader grader){
         List<Defect> defects = grader.getDefects();
         Float points = grader.getPoints();
@@ -34,17 +53,28 @@ public class CorrectorOutputFormatter {
 
         builder.append("\n%%%%%%%%%%%%%%%%%%%%%% Long output %%%%%%%%%%%%%%%%%%%%%%\n");
 
-        defects.stream()
-                //.filter(Defect::getPresent)
-                .forEach(defect -> builder.append(String.format("\n%s\n",defectRepresentation(defect))));
+        defects.forEach(defect -> builder.append(String.format("\n%s\n",defectRepresentation(defect))));
         return builder.toString();
     }
 
+    /**
+     * Creates a String representation of a defect by getting it from DefectVisitor.
+     * @param defect defect to whose string is wanted
+     * @return String representation of given defect
+     * @see DefectVisitor
+     */
     private static String defectRepresentation(Defect defect){
         DefectVisitor visitor = new DefectStringifier();
         return defect.accept(visitor);
     }
 
+    /**
+     * Creates a String point table of all defects
+     * and points for their presence (absence).
+     * @param defects defects list of checked defects
+     * @param points total number of point obtained
+     * @return String table of points
+     */
     private static String pointTable(List<Defect> defects, Float points){
         StringBuilder builder = new StringBuilder();
 
@@ -60,7 +90,12 @@ public class CorrectorOutputFormatter {
         builder.append("-".repeat(longestString.get()));
         builder.append("---------------\n");
 
-        for(Defect defect : defects){
+        List<Defect> sortedDefects  = defects.stream()
+                .sorted(Comparator.comparingDouble(Defect::getPoints).reversed())
+                .sorted(Comparator.comparing((defect)->defect.getPresent()))
+                .collect(Collectors.toList());
+
+        for(Defect defect : sortedDefects){
             builder.append(
                 String.format("| %s%s | %f |\n",
                     defect.getType().getMessage(),
